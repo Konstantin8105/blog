@@ -273,65 +273,74 @@ func min[P interface{ ~int64 | ~float64 }](x, y P) P
 ```Go
 func min[P ~int64 | ~float64](x, y P) P { … }
 ```
+С новым представлением набора типов нам также нужен новый способ объяснить, что означает [_implement_](/ref/spec#Implementing_an_interface) интерфейс.
 
-With the new type set view we also need a new way to explain what it means to [_implement_](/ref/spec#Implementing_an_interface) an interface.
-We say that a (non-interface) type `T` implements an interface `I` if `T` is an element of the interface's type set.
-If `T` is an interface itself, it describes a type set. Every single type in that set must also be in the type set of `I`, otherwise `T` would contain types that do not implement `I`.
-Thus, if `T` is an interface, it implements interface `I` if the type set of `T` is a subset of the type set of `I`.
+Мы говорим, что (неинтерфейсный) тип T реализует интерфейс I, если T является элементом набора типов интерфейса.
+Если `T` сам по себе является интерфейсом, он описывает набор типов. Каждый отдельный тип в этом наборе также должен входить в набор типов I, иначе T будет содержать типы, которые не реализуют I.
+Таким образом, если `T` является интерфейсом, он реализует интерфейс `I`, если набор типов `T` является подмножеством набора типов `I`.
 
-Now we have all the ingredients in place to understand constraint satisfaction.
-As we have seen earlier, a type constraint describes the set of acceptable argument types for a type parameter. A type argument satisfies the corresponding type parameter constraint if the type argument is in the set described by the constraint interface.
-This is another way of saying that the type argument implements the constraint.
-In Go 1.18 and Go 1.19, constraint satisfaction meant constraint implementation.
-As we'll see in a bit, in Go 1.20 constraint satisfaction is not quite constraint implementation anymore.
+Теперь у нас есть все необходимое для понимания удовлетворения ограничений.
 
-## Operations on type parameter values
+Как мы видели ранее, ограничение типа описывает набор допустимых типов аргументов для параметра типа. Аргумент типа удовлетворяет соответствующему ограничению параметра типа, если аргумент типа находится в наборе, описанном интерфейсом ограничения.
+Это еще один способ сказать, что аргумент типа реализует ограничение.
 
-A type constraint does not just specify what type arguments are acceptable for a type parameter, it also determines the operations that are possible on values of a type parameter.
-As we would expect, if a constraint defines a method such as `Write`,
-the `Write` method can be called on a value of the respective type parameter.
-More generally, an operation such as `+` or `*` that is supported by all types in the type set defined by a constraint is permitted with values of the corresponding type parameter.
+В Go 1.18 и Go 1.19 удовлетворение ограничений означало реализацию ограничений.
+Как мы вскоре увидим, в Go 1.20 удовлетворение ограничений больше не является реализацией ограничений.
 
-For instance, given the `min` example, in the function body any operation that is supported by `int64` and `float64` types is permitted on values of the type parameter `P`.
-That includes all the basic arithmetic operations, but also comparisons such as <code>&lt;</code>.
-But it does not include bitwise operations such as `&` or `|` because those operations are not defined on `float64` values.
+## Операции над значениями параметров типа(type parameter values)
 
-## Comparable types
+Ограничение типа не только определяет, какие аргументы типа приемлемы для параметра типа, но также определяет операции, которые возможны над значениями параметра типа.
+Как и следовало ожидать, если ограничение определяет такой метод, как `Write`, то метод `Write` можно вызвать для значения соответствующего параметра типа.
 
-In contrast to other unary and binary operations, `==` is defined on not just a limited set of [predeclared types](/ref/spec#Types), but on an infinite variety of types, including arrays, structs, and interfaces.
-It is impossible to enumerate all these types in a constraint.
-We need a different mechanism to express that a type parameter must support `==` (and `!=`, of course) if we care about more than predeclared types.
+В более общем смысле, такая операция, как `+` или `*`, которая поддерживается всеми типами в наборе типов, определенном ограничением, разрешена со значениями соответствующего параметра типа.
 
-We solve this problem through the predeclared type [`comparable`](/ref/spec#Predeclared_identifiers), introduced with Go 1.18.
-`comparable` is an interface type whose type set is the infinite set of comparable types, and that may be used as a constraint whenever we require a type argument to support `==`.
+Например, в примере `min` в теле функции разрешена любая операция, поддерживаемая типами int64 и float64, со значениями параметра типа `P`.
 
-Yet, the set of types comprised by `comparable` is not the same as the set of all [comparable types](/ref/spec#Comparison_operators) defined by the Go spec.
-[By construction](/ref/spec#Interface_types), a type set specified by an interface (including `comparable`) does not contain the interface itself (or any other interface).
-Thus, an interface such as `any` is not included in `comparable`, even though all interfaces support `==`.
+Сюда входят все основные арифметические операции, а также сравнения, такие как <code>&lt;</code>.
+Но он не включает побитовые операции, такие как `&` или `|`, поскольку эти операции не определены для значений `float64`.
 
-What gives?
+## Типы сравнения (Comparable types)
 
-Comparison of interfaces (and of composite types containing them) may panic at run time:
-this happens when the dynamic type, the type of the actual value stored in the interface variable, is not comparable.
-Consider our original `lookupTable` example: it accepts arbitrary values as keys.
-But if we try to enter a value with a key that does not support `==`, say a slice value, we get a run-time panic:
+В отличие от других унарных и бинарных операций, `==` определяется не только для ограниченного набора [заранее объявленных типов](/ref/spec#Types), но и для бесконечного множества типов, включая массивы, структуры и интерфейсы.
+
+Невозможно перечислить все эти типы в ограничении.
+Нам нужен другой механизм, чтобы выразить, что параметр типа должен поддерживать `==` (и `!=`, конечно), если нас интересуют не только предварительно объявленные типы.
+
+Мы решаем эту проблему с помощью предварительно объявленного типа [`comparable`](/ref/spec#Predeclared_identifiers), представленного в Go 1.18.
+
+`comparable` — это тип интерфейса, набор типов которого представляет собой бесконечное множество сравнимых типов, и который можно использовать в качестве ограничения всякий раз, когда нам требуется аргумент типа для поддержки `==`.
+
+Тем не менее, набор типов, содержащийся в `comparable`, не совпадает с набором всех [сравнимых типов](/ref/spec#Comparison_operators), определенных в спецификации Go.
+[По конструкции](/ref/spec#Interface_types), набор типов, заданный интерфейсом (включая `comparable`), не содержит сам интерфейс (или любой другой интерфейс).
+Таким образом, такой интерфейс, как `any`, не включается в `comparable`, хотя все интерфейсы поддерживают `==`.
+
+Что дает?
+
+Сравнение интерфейсов (и составных типов, содержащих их) может вызвать панику во время выполнения:
+
+это происходит, когда динамический тип, тип фактического значения, хранящегося в переменной интерфейса, не сравним.
+
+Рассмотрим наш оригинальный пример с LookupTable: он принимает произвольные значения в качестве ключей.
+Но если мы попытаемся ввести значение с ключом, который не поддерживает `==`, скажем, значение среза, мы получим панику во время выполнения:
 
 ```Go
 lookupTable[[]int{}] = "slice"  // PANIC: runtime error: hash of unhashable type []int
+                                // Ошибка: во время выполнения: нехэшируемый тип []int
 ```
 
-By contrast, `comparable` contains only types that the compiler guarantees will not panic with `==`.
-We call these types _strictly comparable_.
+Напротив, `comparable` содержит только те типы, которые, как гарантирует компилятор, не вызовут паники при `==`.
+Мы называем эти типы «строго сопоставимыми».
 
-Most of the time this is exactly what we want: it's comforting to know that `==` in a generic function won't panic if the operands are constrained by `comparable`, and it is what we would intuitively expect.
+В большинстве случаев это именно то, что нам нужно: приятно знать, что `==` в обобщенной функции не будет паниковать, если операнды ограничены `comparable`, и это то, чего мы интуитивно ожидаем.
 
-Unfortunately, this definition of `comparable` together with the rules for constraint satisfaction prevented us from writing useful generic code, such as the `genericLookupTable` type shown earlier:
+К сожалению, это определение «сравнимости» вместе с правилами удовлетворения ограничений не позволило нам написать полезный общий код, такой как тип «genericLookupTable», показанный ранее:
 
-for `any` to be an acceptable argument type, `any` must satisfy (and therefore implement) `comparable`.
-But the type set of `any` is larger than (not a subset of) the type set of `comparable` and therefore does not implement `comparable`.
+Чтобы `any` был приемлемым типом аргумента, `any` должен удовлетворять (и, следовательно, реализовываться) `comparable`.
+Но набор типов `any` больше (не является подмножеством) набора типов `comparable` и, следовательно, не реализует `comparable`.
 
 ```Go
 var lookupTable GenericLookupTable[any, string] // ERROR: any does not implement comparable (Go 1.18 and Go 1.19)
+                                                // Ошибка: any не реализует comparable (Go 1.18 and Go 1.19)
 ```
 
 Users recognized the problem early on and filed a multitude of issues and proposals in short order ([#51338](/issue/51338), [#52474](/issue/52474), [#52531](/issue/52531), [#52614](/issue/52614), [#52624](/issue/52624), [#53734](/issue/53734), etc).
