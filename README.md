@@ -440,57 +440,75 @@ func g[P any]() {
 
 ## Последствия и способы устранения (Consequences and remedies)
 
-We gophers take pride in the fact that language-specific behavior can be explained and reduced to a fairly compact set of rules, spelled out in the language spec.
-Over the years we have refined these rules, and when possible made them simpler and often more general.
-We also have been careful to keep the rules orthogonal, always on the lookout for unintended and unfortunate consequences.
-Disputes are resolved by consulting the spec, not by decree.
-That is what we have aspired to since the inception of Go.
+Мы, гордимся тем, что поведение, специфичное для языка, можно объяснить и свести к довольно компактному набору правил, прописанных в спецификации языка.
 
-_One does not simply add an exception to a carefully crafted type system without consequences!_
+За прошедшие годы мы усовершенствовали эти правила и, когда это было возможно, сделали их более простыми, а зачастую и более общими.
+Мы также старались поддерживать ортогональность правил, всегда отслеживая непредвиденные и печальные последствия.
 
-So where's the catch?
-There's an obvious (if mild) drawback, and a less obvious (and more severe) one.
-Obviously, we now have a more complex rule for constraint satisfaction which is arguably less elegant than what we had before.
-This is unlikely to affect our day-to-day work in any significant way.
+Споры разрешаются путем изучения спецификации, а не указа.
+Это то, к чему мы стремились с момента создания Go.
 
-But we do pay a price for the exception: in Go 1.20, generic functions that rely on `comparable` are not statically type-safe anymore.
-The `==` and `!=` operations may panic if applied to operands of `comparable` type parameters, even though the declaration says that they are strictly comparable.
-A single non-comparable value may sneak its way through multiple generic functions or types by way of a single non-strictly comparable type argument and cause a panic.
-In Go 1.20 we can now declare
+_Невозможно просто добавить исключение в тщательно продуманную систему типов без последствий!_
+
+Так где же подвох?
+
+Есть очевидный (пусть и незначительный) недостаток и менее очевидный (и более серьезный).
+Очевидно, что теперь у нас есть более сложное правило удовлетворения ограничений, которое, возможно, менее элегантно, чем то, что было раньше.
+Это вряд ли существенно повлияет на нашу повседневную работу.
+
+Но мы платим цену за это исключение: в Go 1.20 универсальные функции, основанные на `comparable`, больше не являются статически типобезопасными.
+Операции `==` и `!=` могут вызывать панику, если применяются к операндам параметров типа `сравнимый`, даже если в объявлении указано, что они строго сопоставимы.
+
+Одно несопоставимое значение может проникнуть через несколько универсальных функций или типов посредством одного не строго сопоставимого аргумента типа и вызвать панику.
+
+В Go 1.20 мы теперь можем объявить
 
 ```Go
 var lookupTable genericLookupTable[any, string]
 ```
 
-without compile-time error, but we will get a run-time panic if we ever use a non-strictly comparable key type in this case, exactly like we would with the built-in `map` type.
-We have given up static type safety for a run-time check.
+без ошибки во время компиляции, но мы получим панику во время выполнения, если когда-либо будем использовать в этом случае нестрого сопоставимый тип ключа, точно так же, как мы это сделали бы со встроенным типом `map`.
+Мы отказались от статической безопасности типов в пользу проверки во время выполнения.
 
-There may be situations where this is not good enough, and where we want to enforce strict comparability.
-The following observation allows us to do exactly that, at least in limited form: type parameters do not benefit from the exception that we added to the constraint satisfaction rule.
-For instance, in our earlier example, the type parameter `P` in the function `g` is constrained by `any` (which by itself is comparable but not strictly comparable) and so `P` does not satisfy `comparable`.
-We can use this knowledge to craft a compile-time assertion of sorts for a given type `T`:
+Могут возникнуть ситуации, когда этого недостаточно и когда мы хотим обеспечить строгую сопоставимость.
+
+Следующее наблюдение позволяет нам сделать именно это, по крайней мере в ограниченной форме: параметры типа не получают выгоды от исключения, которое мы добавили в правило удовлетворения ограничений.
+
+Например, в нашем предыдущем примере параметр типа `P` в функции `g` ограничен типом `any` (который сам по себе сопоставим, но не является строго сопоставимым), и поэтому `P` не удовлетворяет требованию `comparable`.
+Мы можем использовать эти знания для создания своего рода утверждения во время компиляции для данного типа `T`:
+
 
 ```Go
 type T struct { … }
 ```
 
-We want to assert that `T` is strictly comparable.
-It's tempting to write something like:
+Мы хотим утверждать, что `Т` строго сопоставимо.
+Соблазнительно написать что-то вроде:
 
 ```Go
 // isComparable may be instantiated with any type that supports ==
 // including types that are not strictly comparable because of the
 // exception for constraint satisfaction.
+//
+// isComparable может быть создан с любым типом, который поддерживает ==
+// включая типы, которые не являются строго сопоставимыми из-за
+// исключение для удовлетворения ограничений.
+//
 func isComparable[_ comparable]() {}
 
 // Tempting but not quite what we want: this declaration is also
 // valid for types T that are not strictly comparable.
+//
+// Заманчиво, но не совсем то, что нам нужно: это объявление также
+// действительно для типов T, которые не являются строго сопоставимыми.
+//
 var _ = isComparable[T] // compile-time error if T does not support ==
 ```
 
-The dummy (blank) variable declaration serves as our "assertion".
-But because of the exception in the constraint satisfaction rule, `isComparable[T]` only fails if `T` is not comparable at all; it will succeed if `T` supports `==`.
-We can work around this problem by using `T` not as a type argument, but as a type constraint:
+Фиктивное (пустое) объявление переменной служит нашим "assertion".
+Но из-за исключения в правиле удовлетворения ограничений `isComparable[T]` терпит неудачу только в том случае, если `T` вообще не сравним; оно будет успешным, если `T` поддерживает `==`.
+
+Мы можем обойти эту проблему, используя `T` не как аргумент типа, а как ограничение типа:
 
 ```Go
 func _[P T]() {
@@ -499,6 +517,55 @@ func _[P T]() {
 ```
 
 Here is a [passing](/play/p/9i9iEto3TgE) and [failing](/play/p/5d4BeKLevPB) playground example illustrating this mechanism.
+Вот пример [прохождения](/play/p/9i9iEto3TgE) и [провала](/play/p/5d4BeKLevPB), иллюстрирующий этот механизм.
+
+PASS:
+```Go
+package main
+
+func main() {
+	// only here to satify the playground
+}
+
+// T is strictly comparable.
+type T struct {
+	x int
+}
+
+func isComparable[_ comparable]() {}
+
+func _[P T]() {
+	_ = isComparable[P] // P supports == only if T is strictly comparable
+}
+
+// This variable declaration always succeeds with a comparable T,
+// even if it is not strictly comparable.
+var _ = isComparable[T] // compile-time error if `T` does not support `==`
+```
+
+FAIL:
+```Go
+package main
+
+func main() {
+	// only here to satify the playground
+}
+
+// T is not strictly comparable.
+type T struct {
+	x any // any is not strictly comparable
+}
+
+func isComparable[_ comparable]() {}
+
+func _[P T]() {
+	_ = isComparable[P] // P supports == only if T is strictly comparable
+}
+
+// This variable declaration always succeeds with a comparable T,
+// even if it is not strictly comparable.
+var _ = isComparable[T] // compile-time error if `T` does not support `==`
+```
 
 ## Final observations
 
@@ -514,7 +581,19 @@ As always, please let us know if anything doesn't work as expected by filing iss
 
 Thank you!
 
+## Заключительные наблюдения
 
+Интересно, что за два месяца до выпуска Go 1.18 компилятор реализовал удовлетворение ограничений точно так же, как мы это делаем сейчас в Go 1.20.
+Но поскольку в то время удовлетворение ограничений означало реализацию интерфейса, у нас была реализация, несовместимая со спецификацией языка.
+Мы были предупреждены об этом факте с помощью [issue #50646](/issue/50646).
+Мы были очень близки к релизу, и нам нужно было быстро принять решение.
+В отсутствие убедительного решения казалось безопаснее привести реализацию в соответствие со спецификацией.
+Год спустя, когда у нас было достаточно времени для рассмотрения различных подходов, похоже, что реализация, которую мы получили, была именно той, которую мы хотели в первую очередь.
+Мы прошли полный круг.
+
+Как всегда, сообщите нам, если что-то работает не так, как ожидалось, сообщив о проблемах по адресу [https://go.dev/issue/new](/issue/new).
+
+Спасибо!
 
 
 
