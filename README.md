@@ -2,13 +2,13 @@
 
 # Оглавление
 
-* Go выйграл в 2010 Bossie Award [bossie.md](#bossie.md)
-* Встроенный фаззинг Go [fuzz-beta.md](#fuzz-beta.md)
-* Параметры типа, наборы типов, сравнимые типы, удовлетворение ограничений [comparable.md](#comparable.md)
+* Go выйграл в 2010 Bossie Award [bossie](#bossie)
+* Встроенный фаззинг Go [fuzz-beta](#fuzz-beta)
+* Параметры типа, наборы типов, сравнимые типы, удовлетворение ограничений [comparable](#comparable)
 * [Оригинальные материалы](#Оригинальные-материалы)
 
 
-# bossie.md
+# bossie
 
 [^](#Оглавление)
 
@@ -31,7 +31,7 @@ by:
 Команда Go рада принять эту награду.
 Это отражает не только нашу тяжелую работу, но и усилия растущего сообщества разработчиков Go, которым мы должны выразить нашу искреннюю благодарность.
 
-# fuzz-beta.md
+# fuzz-beta
 
 [^](#Оглавление)
 
@@ -75,34 +75,34 @@ by:
 Ниже написан пример фаззинг теста для тестирования поведения [net/url package](https://pkg.go.dev/net/url#ParseQuery).
 
 ```Go
-	//go:build go1.18
-	// +build go1.18
+//go:build go1.18
+// +build go1.18
 
-	package fuzz
+package fuzz
 
-	import (
-		"net/url"
-		"reflect"
-		"testing"
-	)
+import (
+	"net/url"
+	"reflect"
+	"testing"
+)
 
-	func FuzzParseQuery(f *testing.F) {
-		f.Add("x=1&y=2")
-		f.Fuzz(func(t *testing.T, queryStr string) {
-			query, err := url.ParseQuery(queryStr)
-			if err != nil {
-				t.Skip()
-			}
-			queryStr2 := query.Encode()
-			query2, err := url.ParseQuery(queryStr2)
-			if err != nil {
-				t.Fatalf("ParseQuery failed to decode a valid encoded query %s: %v", queryStr2, err)
-			}
-			if !reflect.DeepEqual(query, query2) {
-				t.Errorf("ParseQuery gave different query after being encoded\nbefore: %v\nafter: %v", query, query2)
-			}
-		})
-	}
+func FuzzParseQuery(f *testing.F) {
+	f.Add("x=1&y=2")
+	f.Fuzz(func(t *testing.T, queryStr string) {
+		query, err := url.ParseQuery(queryStr)
+		if err != nil {
+			t.Skip()
+		}
+		queryStr2 := query.Encode()
+		query2, err := url.ParseQuery(queryStr2)
+		if err != nil {
+			t.Fatalf("ParseQuery failed to decode a valid encoded query %s: %v", queryStr2, err)
+		}
+		if !reflect.DeepEqual(query, query2) {
+			t.Errorf("ParseQuery gave different query after being encoded\nbefore: %v\nafter: %v", query, query2)
+		}
+	})
+}
 ```
 
 Вы можете прочитать больше о фаззинге в pkg.go.dev, включая [Основы фаззинга в Go](https://pkg.go.dev/testing@master#hdr-Fuzzing) и [godoc навого типа `testing.F`](https://pkg.go.dev/testing@master#F).
@@ -127,7 +127,7 @@ by:
 
 Счастливого fuzzing!
 
-# comparable.md
+# comparable
 
 [^](#Оглавление)
 
