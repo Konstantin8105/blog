@@ -130,6 +130,9 @@ Happy fuzzing!
 
 # Оригинальные материалы
 
+[^](#Оглавление)
+
+
 ```
 git clone https://github.com/golang/website.git
 
