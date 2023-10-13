@@ -343,12 +343,13 @@ var lookupTable GenericLookupTable[any, string] // ERROR: any does not implement
                                                 // Ошибка: any не реализует comparable (Go 1.18 and Go 1.19)
 ```
 
-Users recognized the problem early on and filed a multitude of issues and proposals in short order ([#51338](/issue/51338), [#52474](/issue/52474), [#52531](/issue/52531), [#52614](/issue/52614), [#52624](/issue/52624), [#53734](/issue/53734), etc).
-Clearly this was a problem we needed to address.
+Пользователи сразу заметили проблему и в короткие сроки подали множество вопросов и предложений ([#51338](/issue/51338), [#52474](/issue/52474), [#52531](/issue/52531). , [#52614](/issue/52614), [#52624](/issue/52624), [#53734](/issue/53734) и т. д.).
+Очевидно, это была проблема, которую нам нужно было решить.
 
-The "obvious" solution was simply to include even non-strictly comparable types in the `comparable` type set.
-But this leads to inconsistencies with the type set model.
-Consider the following example:
+«Очевидным» решением было просто включить в набор `comparable` типов даже не строго сопоставимые типы.
+Но это приводит к несоответствию модели набора типов.
+
+Рассмотрим следующий пример:
 
 ```Go
 func f[Q comparable]() { … }
@@ -360,31 +361,35 @@ func g[P any]() {
 }
 ```
 
-Function `f` requires a type argument that is strictly comparable.
-Obviously it is ok to instantiate `f` with `int`: `int` values never panic on `==` and thus `int` implements `comparable` (case 1).
-On the other hand, instantiating `f` with `P` is not permitted: `P`'s type set is defined by its constraint `any`, and `any` stands for the set of all possible types.
-This set includes types that are not comparable at all.
-Hence, `P` doesn't implement `comparable` and thus cannot be used to instantiate `f` (case 2).
-And finally, using the type `any` (rather than a type parameter constrained by `any`) doesn't work either, because of exactly the same problem (case 3).
+Функция `f` требует аргумента типа, который строго сопоставим.
 
-Yet, we do want to be able to use the type `any` as type argument in this case.
-The only way out of this dilemma was to change the language somehow.
-But how?
+Очевидно, что можно создать экземпляр `f` с помощью `int`: значения `int` никогда не паникуют при `==` и, таким образом, `int` реализует `comparable` (случай 1).
 
-## Interface implementation vs constraint satisfaction
+С другой стороны, создание экземпляра `f` с помощью `P` не разрешено: набор типов `P` определяется его ограничением `any`, а `any` обозначает набор всех возможных типов.
+В этот набор входят типы, которые вообще несопоставимы.
+Следовательно, `P` не реализует `comparable` и, следовательно, не может использоваться для создания экземпляра `f` (случай 2).
 
-As mentioned earlier, constraint satisfaction is interface implementation:
-a type argument `T` satisfies a constraint `C` if `T` implements `C`.
-This makes sense: `T` must be in the type set expected by `C` which is exactly the definition of interface implementation.
+И, наконец, использование типа `any` (а не параметра типа, ограниченного `any`) также не работает из-за точно такой же проблемы (случай 3).
 
-But this is also the problem because it prevents us from using non-strictly comparable types as type arguments for `comparable`.
+Тем не менее, в этом случае мы хотим иметь возможность использовать тип `any` в качестве аргумента типа.
+Единственным выходом из этой дилеммы было как-то изменить язык.
+Но как?
 
-So for Go 1.20, after almost a year of publicly discussing numerous alternatives (see the issues mentioned above), we decided to introduce an exception for just this case.
-To avoid the inconsistency, rather than changing what `comparable` means, we differentiated between _interface implementation_, which is relevant for passing values to variables, and _constraint satisfaction_, which is relevant for passing type arguments to type parameters.
-Once separated, we could give each of those concepts (slightly) different rules, and that is exactly what we did with proposal [#56548](/issue/56548).
+## Реализация интерфейса и удовлетворение ограничений (Interface implementation vs constraint satisfaction)
 
-The good news is that the exception is quite localized in the [spec](/ref/spec#Satisfying_a_type_constraint).
-Constraint satisfaction remains almost the same as interface implementation, with a caveat:
+Как упоминалось ранее, удовлетворение ограничений — это реализация интерфейса:
+аргумент типа T удовлетворяет ограничению C, если T реализует C.
+
+Это имеет смысл: `T` должен принадлежать к набору типов, ожидаемому `C`, что и является определением реализации интерфейса.
+
+Но это также проблема, потому что это не позволяет нам использовать не строго сопоставимые типы в качестве аргументов типа для `comparable`.
+
+Итак, для Go 1.20, после почти года публичного обсуждения многочисленных альтернатив (см. проблемы, упомянутые выше), мы решили ввести исключение именно для этого случая.
+Чтобы избежать несоответствия, вместо того, чтобы менять значение термина «сравнимый», мы разграничили _реализацию интерфейса_, которая важна для передачи значений переменным, и _удовлетворение ограничений_, которая важна для передачи аргументов типа в параметры типа.
+После разделения мы могли бы дать каждой из этих концепций (немного) разные правила, и это именно то, что мы сделали с предложением [#56548](/issue/56548).
+
+Хорошей новостью является то, что исключение полностью локализовано в [spec](/ref/spec#Satisfying_a_type_constraint).
+Удовлетворение ограничений остается почти таким же, как и реализация интерфейса, с оговоркой:
 
 > A type `T` satisfies a constraint `C` if
 >
@@ -392,18 +397,21 @@ Constraint satisfaction remains almost the same as interface implementation, wit
 > - `C` can be written in the form `interface{ comparable; E }`, where `E` is a basic interface
 >   and `T` is [comparable](/ref/spec#Comparison_operators) and implements `E`.
 
-The second bullet point is the exception.
-Without going too much into the formalism of the spec, what the exception says is the following:
-a constraint `C` that expects strictly comparable types (and which may also have other requirements such as methods `E`) is satisfied by any type argument `T` that supports `==` (and which also implements the methods in `E`, if any).
 
-Or even shorter: a type that supports `==` also satisfies `comparable` (even though it may not implement it).
+Второй пункт является исключением.
 
-We can immediately see that this change is backward-compatible:
-before Go 1.20, constraint satisfaction was the same as interface implementation, and we still have that rule (1st bullet point).
-All code that relied on that rule continues to work as before.
-Only if that rule fails do we need to consider the exception.
+Не вдаваясь слишком в формализм спецификации, исключение говорит следующее:
 
-Let's revisit our previous example:
+ограничение `C`, которое ожидает строго сопоставимых типов (и которое может также иметь другие требования, такие как методы `E`), удовлетворяется любым аргументом типа `T`, который поддерживает `==` (и который также реализует методы в `E `, если есть).
+
+Или даже короче: тип, поддерживающий `==`, также удовлетворяет `comparable` (даже если он может его не реализовывать).
+
+Мы сразу видим, что это изменение обратно совместимо:
+до Go 1.20 удовлетворение ограничений было таким же, как и реализация интерфейса, и это правило до сих пор действует (первый пункт).
+Весь код, основанный на этом правиле, продолжает работать как прежде.
+Только если это правило не работает, нам нужно рассмотреть исключение.
+
+Давайте вернемся к нашему предыдущему примеру:
 
 ```Go
 func f[Q comparable]() { … }
@@ -415,20 +423,22 @@ func g[P any]() {
 }
 ```
 
-Now, `any` does satisfy (but not implement!) `comparable`.
+Теперь `any` удовлетворяет (но не реализует!) `comparable`.
 
-Why?
+Почему?
 
-Because Go permits `==` to be used with values of type `any` (which corresponds to the type `T` in the spec rule), and because the constraint `comparable` (which corresponds to the constraint `C` in the rule) can be written as `interface{ comparable; E }` where `E` is simply the empty interface in this example (case 3).
+Поскольку Go позволяет использовать `==` со значениями типа `any` (который соответствует типу `T` в правиле спецификации), а также потому, что ограничение `comparable` (которое соответствует ограничению `C` в правиле спецификации) можно записать как `interface{ comparable; E }` где `E` — это просто пустой интерфейс в этом примере (случай 3).
 
-Interestingly, `P` still does not satisfy `comparable` (case 2).
-The reason is that `P` is a type parameter constrained by `any` (it _is not_ `any`).
-The operation `==` is _not_ available with all types in the type set of `P` and thus not available on `P`; it is not a [comparable type](/ref/spec#Comparison_operators).
-Therefore the exception doesn't apply.
-But this is ok: we do like to know that `comparable`, the strict comparability requirement, is enforced most of the time. We just need an exception for Go types that support `==`, essentially for historical reasons:
-we always had the ability to compare non-strictly comparable types.
+Интересно, что «P» все еще не удовлетворяет «сопоставимому» (случай 2).
+Причина в том, что `P` — это параметр типа, ограниченный `any` (это _не_ `any`).
 
-## Consequences and remedies
+Операция `==` _не_ доступна для всех типов в наборе типов `P` и, следовательно, недоступна для `P`; это не [сравнимый тип](/ref/spec#Comparison_operators).
+Поэтому исключение не применяется.
+
+Но это нормально: нам хотелось бы знать, что в большинстве случаев соблюдается строгое требование сопоставимости. Нам просто нужно исключение для типов Go, поддерживающих `==`, в основном по историческим причинам:
+у нас всегда была возможность сравнивать не строго сопоставимые типы.
+
+## Последствия и способы устранения (Consequences and remedies)
 
 We gophers take pride in the fact that language-specific behavior can be explained and reduced to a fairly compact set of rules, spelled out in the language spec.
 Over the years we have refined these rules, and when possible made them simpler and often more general.
