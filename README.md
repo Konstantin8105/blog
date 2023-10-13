@@ -10,16 +10,14 @@
 
 [^](#Оглавление)
 
----
-title: Fuzzing is Beta Ready
+Резюме: Фаззинг Go теперь готово к бета-тестированию.
+
 date: 2021-06-03
+
 by:
 - Katie Hockman
 - Jay Conrod
 
-summary: Native Go fuzzing is now ready for beta testing on tip.
-Резюме: Фаззинг Go теперь готово к бета-тестированию.
----
 
 
 We are excited to announce that native fuzzing is ready for beta testing on tip!
