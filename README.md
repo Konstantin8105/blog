@@ -219,30 +219,33 @@ func Clone[M ~map[K]V, K comparable, V any](m M) M { … }
 Ниже описано проливается свет на языковой механизм стоящий за этим.
 Для этого начнем с небольшой вводной информации.
 
-## Type parameters and constraints
+## Параметры типа и ограничения (Type parameters and constraints)
 
-Go 1.18 introduced generics and, with that, [_type parameters_](/ref/spec#Type_parameter_declarations) as a new language construct.
+В версии Go 1.18 были включены дженерики(generics) и также [Параметры типа_type parameters_](/ref/spec#Type_parameter_declarations) как новая языковая конструкция.
 
-In an ordinary function, a parameter ranges over a set of values that is restricted by its type.
-Analogously, in a generic function (or type), a type parameter ranges over a set of types that is restricted by its [_type constraint_](/ref/spec#Type_constraints).
-Thus, a type constraint defines the _set of types_ that are permissible as type arguments.
+В обычной функции, параметр в пределах ограниченного типом.
+Аналогично, в дженерик функциях(или типах), тип параметра в пределах обозначенных типов, которые ограничены [ограничение типа_type constraint_](/ref/spec#Type_constraints).
+Таким образом, ограничение типа определяет набор типов допустимых как типы аргумента.
 
-Go 1.18 also changed how we view interfaces: 
-while in the past an interface defined a set of methods, now an interface defines a set of types.
+В Go 1.18 также изменено точка зрения на интерфейсы:
+Если ранее интерфейс определял набор методов, то теперь интерфейс определяет набор типов.
 
-This new view is completely backward compatible:
-for any given set of methods defined by an interface, we can imagine the (infinite) set of all types that implement those methods.
+Эта точка зрения является обратно несовместимой:
+для любого заданного набора методов, определенных интерфейсом, мы можем представить (бесконечный) набор всех типов, реализующих эти методы.
 
-For instance, given an [`io.Writer`](/pkg/io#Writer) interface, we can imagine the infinite set of all types that have a `Write` method with the appropriate signature.
-All of these types _implement_ the interface because they all have the required `Write` method.
+Например, имея интерфейс [`io.Writer`](/pkg/io#Writer), мы можем представить бесконечное множество всех типов, которые имеют метод `Write` с соответствующей сигнатурой.
+Все эти типы _реализуют_ интерфейс, поскольку все они имеют обязательный метод Write.
 
-But the new type set view is more powerful than the old method set one:
-we can describe a set of types explicitly, not only indirectly through methods.
+Но новое представление набора типов более мощное, чем старое представление набора методов:
+мы можем описать набор типов явно, а не только косвенно через методы.
 
-This gives us new ways to control a type set.
-Starting with Go 1.18, an interface may embed not just other interfaces, but any type, a union of types, or an infinite set of types that share the same [underlying type](/ref/spec#Underlying_types). These types are then included in the [type set computation](/ref/spec#General_interfaces):
-the union notation `A|B` means "type `A` or type `B`", and the `~T` notation stands for "all types that have the underlying type `T`".
-For instance, the interface
+Это дает нам новые способы управления набором типов.
+Начиная с Go 1.18, интерфейс может включать не только другие интерфейсы, но и любой тип, объединение типов или бесконечное множество типов, которые имеют один и тот же [базовый тип](/ref/spec#Underlying_types). Эти типы затем включаются в [вычисление набора типов](/ref/spec#General_interfaces):
+
+обозначение объединения `A|B` означает «тип `A` или тип `B`», а обозначение `~T` означает «все типы, имеющие базовый тип `T`».
+
+Например, интерфейс
+
 
 ```Go
 interface {
@@ -251,20 +254,21 @@ interface {
 }
 ```
 
-defines the set of all types whose underlying types are either `int` or `string` and that also implement `io.Writer`'s `Write` method.
+определяет набор всех типов, базовыми типами которых являются `int` или `string` и которые также реализуют метод Write `io.Writer`.
 
-Such generalized interfaces can't be used as variable types.
-But because they describe type sets they are used as type constraints, which are sets of types.
-For instance, we can write a generic `min` function
+Такие обобщенные интерфейсы нельзя использовать в качестве типов переменных.
+Но поскольку они описывают наборы типов, они используются как ограничения типов, которые представляют собой наборы типов.
+Например, мы можем написать общую функцию min.
 
 ```Go
 func min[P interface{ ~int64 | ~float64 }](x, y P) P
 ```
 
-which accepts any `int64` or `float64` argument.
-(Of course, a more realistic implementation would use a constraint that enumerates all basic types with an <code>&lt;</code> operator.)
+который принимает любой аргумент `int64` или `float64`.
 
-As an aside, because enumerating explicit types without methods is common, a little bit of [syntactic sugar](https://en.wikipedia.org/wiki/Syntactic_sugar) allows us to [omit the enclosing `interface{}`](/ref/spec#General_interfaces), leading to the compact and more idiomatic
+(Конечно, более реалистичная реализация могла бы использовать ограничение, перечисляющее все базовые типы с помощью оператора <code>&lt;</code>.)
+
+Кроме того, поскольку перечисление явных типов без методов является обычным явлением, немного [синтаксического сахара](https://en.wikipedia.org/wiki/Syntactic_sugar) позволяет нам [опустить включающий `interface{}`]( /ref/spec#General_interfaces), что приводит к более компактному и идиоматическому интерфейсу.
 
 ```Go
 func min[P ~int64 | ~float64](x, y P) P { … }
