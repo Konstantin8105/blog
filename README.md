@@ -10,7 +10,7 @@
 
 [^](#Оглавление)
 
-Резюме: Фаззинг Go теперь готово к бета-тестированию.
+Резюме: Встроенный фаззинг Go теперь готово к бета-тестированию.
 
 date: 2021-06-03
 
@@ -19,43 +19,37 @@ by:
 - Jay Conrod
 
 
+Мы рады сообщить, что встроенный фаззинг готов к бета-тестированию!
 
-We are excited to announce that native fuzzing is ready for beta testing on tip!
-
-Fuzzing is a type of automated testing which continuously manipulates inputs to
-a program to find issues such as panics or bugs. These semi-random data
-mutations can discover new code coverage that existing unit tests may miss, and
-uncover edge case bugs which would otherwise go unnoticed. Since fuzzing can
-reach these edge cases, fuzz testing is particularly valuable for finding
-security exploits and vulnerabilities.
-
-See
-[golang.org/s/draft-fuzzing-design](/s/draft-fuzzing-design)
-for more details about this feature.
+Фаззинг — это тип автоматического тестирования, при котором постоянно манипулируются вводимыми данными в программу для поиска таких проблем, как паника или ошибки. Эти полуслучайные мутации данных могут обнаружить новое покрытие кода, которое могут пропустить существующие модульные тесты, а также выявить ошибки в крайних случаях, которые в противном случае остались бы незамеченными. Поскольку фаззинг может достигать этих крайних случаев, фазз-тестирование особенно ценно для обнаружения эксплойтов и уязвимостей безопасности.
 
 
-## Getting started
+Смотри [golang.org/s/draft-fuzzing-design](/s/draft-fuzzing-design) для получения большей информации.
 
-To get started, you may run the following
 
+## Начнем
+
+Для начала необходимо запустить следующее
+
+```
 	$ go install golang.org/dl/gotip@latest
 	$ gotip download
+```
 
-This builds the Go toolchain from the master branch. After running this, `gotip`
-can act as a drop-in replacement for the `go` command. You can now run commands
-like
+Это создает цепочку инструментов Go из основной ветки. После этого команда gotip может заменить команду go. Теперь вы можете запускать такие команды, как
 
+```
 	$ gotip test -fuzz=Fuzz
+```
 
-## Writing a fuzz test
+## Написание фаззинг теста
 
-A fuzz test must be in a \*\_test.go file as a function in the form `FuzzXxx`.
-This function must be passed a` *testing.F` argument, much like a `*testing.T`
-argument is passed to a `TestXxx` function.
+Фаззинг тест должен находиться в файле \*\_test.go в функции с именем `FuzzXxx`.
+Эта функция должна иметь аргумент ` *testing.F`, похоше на агрумент `*testing.T`для функций `TestXxx`.
 
-Below is an example of a fuzz test that’s testing the behavior of the [net/url
-package](https://pkg.go.dev/net/url#ParseQuery).
+Ниже написан пример фаззинг теста для тестирования поведения [net/url package](https://pkg.go.dev/net/url#ParseQuery).
 
+```
 	//go:build go1.18
 	// +build go1.18
 
@@ -84,43 +78,29 @@ package](https://pkg.go.dev/net/url#ParseQuery).
 			}
 		})
 	}
+```
 
-You can read more about fuzzing at pkg.go.dev, including [an overview
-of fuzzing with Go](https://pkg.go.dev/testing@master#hdr-Fuzzing) and the
-[godoc for the new `testing.F` type](https://pkg.go.dev/testing@master#F).
+Вы можете прочитать больше о фаззинге в pkg.go.dev, включая [Основы фаззинга в Go](https://pkg.go.dev/testing@master#hdr-Fuzzing) и [godoc навого типа `testing.F`](https://pkg.go.dev/testing@master#F).
 
-## Expectations
+## Ожидания
 
-This is a new feature that's still in beta, so you should expect some bugs
-and an incomplete feature set. Check the [issue tracker for issues labelled
-“fuzz”](https://github.com/golang/go/issues?q=is%3Aopen+is%3Aissue+label%3Afuzz)
-to stay up-to-date on existing bugs and missing features.
+Это нововведение остается в стадии beta, поэтому стоит ожидать появление некоторых ошибок и неполного функционала. Проверяйте [в трекере проблем с подписью “fuzz”](https://github.com/golang/go/issues?q=is%3Aopen+is%3Aissue+label%3Afuzz) для того чтобы быть в курсе существующих ошибок и неработающим функционале.
 
-Please be aware that fuzzing can consume a lot of memory and may impact your
-machine’s performance while it runs. `go test -fuzz` defaults to running fuzzing
-in `$GOMAXPROCS` processes in parallel. You may lower the number of processes
-used while fuzzing by explicitly setting the `-parallel` flag with `go test`.
-Read the documentation for the `go test` command by running `gotip help
-testflag` if you want more information.
+Имейте в виду, что фаззинг может потреблять много памяти и влиять на производительность вашей машины во время ее работы. `go test -fuzz` по умолчанию запускает фаззинг в процессах `$GOMAXPROCS` параллельно. Вы можете уменьшить количество процессов, используемых при фаззинге, явно установив флаг `-parallel` с помощью `go test`. Прочтите документацию по команде go test, запустив gotip help testflag, если вам нужна дополнительная информация.
 
-Also be aware that the fuzzing engine writes values that expand test coverage to
-a fuzz cache directory within `$GOCACHE/fuzz` while it runs. There is currently
-no limit to the number of files or total bytes that may be written to the fuzz
-cache, so it may occupy a large amount of storage (i.e. several GBs). You can
-clear the fuzz cache by running `gotip clean -fuzzcache`.
 
-## What’s next?
+Также имейте в виду, что механизм фаззинга записывает значения, которые расширяют тестовое покрытие, в каталог фазз-кэша внутри `$GOCACHE/fuzz` во время своей работы. В настоящее время нет ограничений на количество файлов или общее количество байтов, которые могут быть записаны в фазз-кеш, поэтому он может занимать большой объем памяти (например, несколько ГБ). Вы можете очистить кэш фазза, запустив gotip clean -fuzzcache.
 
-This feature will become available starting in Go 1.18.
 
-If you experience any problems or have an idea for a feature, please [file an
-issue](https://github.com/golang/go/issues/new/?&labels=fuzz).
+## Следующий шаг?
 
-For discussion and general feedback about the feature, you can also participate
-in the [#fuzzing channel](https://gophers.slack.com/archives/CH5KV1AKE) in
-Gophers Slack.
+Это нововведение будет доступно в Go 1.18.
 
-Happy fuzzing!
+Если встречаетесь с любыми проблемами или есть идея для функционала, то просим создать [запись на стену](https://github.com/golang/go/issues/new/?&labels=fuzz).
+
+Для обсуждения и получения обратной связи о фазинге, просим ьакже использовать канал [#fuzzing channel](https://gophers.slack.com/archives/CH5KV1AKE) в Gophers Slack.
+
+Счастливого fuzzing!
 
 
 
