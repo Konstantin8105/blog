@@ -1,7 +1,14 @@
 # Блог
 
+# Оглавление
+
+* [fuzz-beta.md](#fuzz-beta.md)
+* [Оригинальные материалы](#Оригинальные материалы)
+
 
 # fuzz-beta.md
+
+[^](#Оглавление)
 
 ---
 title: Fuzzing is Beta Ready
