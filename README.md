@@ -180,43 +180,44 @@ date: 2023-02-17
 by:
 - Robert Griesemer
 
-On February 1 we released our latest Go version, 1.20, which included a few language changes.
-Here we'll discuss one of those changes: the predeclared `comparable` type constraint is now satisfied by all [comparable types](/ref/spec#Comparison_operators).
-Surprisingly, before Go 1.20, some comparable types did not satisfy `comparable`!
+1 февраля мы выпустили Go версии, 1.20, который включает изменения в язык.
+Обсуждим одно из этих измнений: предварительно объявленное ограничение типа `comparable`(сравнимые) удовлетворяет всем [Сравнимым типам comparable types](/ref/spec#Comparison_operators).
+Удивительно, что до Go 1.20, некоторые сравнимые типы не удовлетворяли ставнимости `comparable`!
 
-If you're confused, you've come to the right place.
-Consider the valid map declaration
+Если вы запустались, то попали по адресу.
+Рассмотрим допустимое объявление карты (map)
 
 ```Go
 var lookupTable map[any]string
 ```
 
-where the map's key type is `any` (which is a [comparable type](/ref/spec#Comparison_operators)).
-This works perfectly fine in Go.
-On the other hand, before Go 1.20, the seemingly equivalent generic map type
+где в качестве ключа используется тип `any` (который является [сравнимым типом (comparable type)](/ref/spec#Comparison_operators)).
+И это превосходно работает в Go.
+Но с другой стороны, до версии Go 1.20, выглядил как общий тип карт(generic map type)
 
 ```Go
 type genericLookupTable[K comparable, V any] map[K]V
 ```
 
-could be used just like a regular map type, but produced a compile-time error when `any` was used as the key type:
+может быть использован как обычный тип карты, но производил ошибку во время компиляции где `any` используется как ключ типа:
 
 ```Go
 var lookupTable genericLookupTable[any, string] // ERROR: any does not implement comparable (Go 1.18 and Go 1.19)
+                                                // Ошибка: any не соответствует сравнимому типу comparable (Go 1.18 and Go 1.19)
 ```
 
-Starting with Go 1.20 this code will compile just fine.
+Начиная  с Go 1.20 этот код успешно компилируется.
 
-The pre-Go 1.20 behavior of `comparable` was particularly annoying because it prevented us from writing the kind of generic libraries we were hoping to write with generics in the first place.
-The proposed [`maps.Clone`](/issue/57436) function
+В предедущих версиях до Go 1.20 поведение `comparable` было прискорбным, потому что не позволял писать универсальные библиотеки, которые мы изначально надеялись написать в помощью дженериков(generics).
+В предложении [`maps.Clone`](/issue/57436) функция
 
 ```Go
 func Clone[M ~map[K]V, K comparable, V any](m M) M { … }
 ```
-can be written but could not be used for a map such as `lookupTable` for the same reason our `genericLookupTable` could not be used with `any` as key type.
+может быть написана, но не может быть использована для карт как `lookupTable` по тем же причинам что и `genericLookupTable` не мог использовать тип ключа `any`.
 
-In this blog post, we hope to shine some light on the language mechanics behind all this.
-In order to do so, we start with a bit of background information.
+Ниже описано проливается свет на языковой механизм стоящий за этим.
+Для этого начнем с небольшой вводной информации.
 
 ## Type parameters and constraints
 
