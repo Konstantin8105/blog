@@ -787,68 +787,67 @@ invalid use of ~ (underlying type of MySlice is []string)
 
 ## Вывод типа (Type inference)
 
-Now that we've explained the signature of `slices.Clone`, let's see how actually using `slices.Clone` is simplified by type inference.
-Remember, the signature of `Clone` is
+Теперь, когда мы объяснили сигнатуру `slices.Clone`, давайте посмотрим, как на самом деле упрощается использование `slices.Clone` за счет вывода типа.
+Помните, что запись функции `Clone`
 
 ```Go
 func Clone[S ~[]E, E any](s S) S
 ```
 
-A call of `slices.Clone` will pass a slice to the parameter `s`.
-Simple type inference will let the compiler infer that the type argument for the type parameter `S` is the type of the slice being passed to `Clone`.
-Type inference is then powerful enough to see that the type argument for `E` is the element type of the type argument passed to `S`.
+Вызов `slices.Clone` передаст срез в параметр `S`.
+Простой вывод типа позволит компилятору сделать вывод, что аргумент типа для параметра типа `S` является типом среза, передаваемого в `Clone`.
+В этом случае вывод типа является достаточно мощным, чтобы увидеть, что аргумент типа для `E` является типом элемента аргумента типа, переданного в `S`.
 
-This means that we can write
+Это означает, что мы можем написать
 
 ```Go
 	c := Clone(ms)
 ```
 
-without having to write
+без необходимости переписывания следующим образом
 
 ```Go
 	c := Clone[MySlice, string](ms)
 ```
 
-If we refer to `Clone` without calling it, we do have to specify a type argument for `S`, as the compiler has nothing it can use to infer it.
-Fortunately, in that case, type inference is able to infer the type argument for `E` from the argument for `S`, and we don't have to specify it separately.
+Если мы ссылаемся на `Clone`, не вызывая его, нам нужно указать аргумент типа для `S`, поскольку компилятору нечего использовать для его вывода.
+К счастью, в этом случае вывод типа способен вывести аргумент типа для `E` из аргумента для `S`, и нам не нужно указывать его отдельно.
 
-That is, we can write
+То есть мы можем написать
 
 ```Go
 	myClone := Clone[MySlice]
 ```
 
-without having to write
+без необходимости переписывания следующим образом
 
 ```Go
 	myClone := Clone[MySlice, string]
 ```
 
-## Deconstructing type parameters
+## Деконструкция параметров типа (Deconstructing type parameters)
 
-The general technique we've used here, in which we define one type parameter `S` using another type parameter `E`, is a way to deconstruct types in generic function signatures.
-By deconstructing a type, we can name, and constrain, all aspects of the type.
+Общий метод, который мы использовали здесь, в котором мы определяем один параметр типа `S`, используя другой параметр типа `E`, представляет собой способ деконструкции типов в сигнатурах общих функций.
+Деконструируя тип, мы можем назвать и ограничить все аспекты типа.
 
-For example, here is the signature for `maps.Clone`.
+Например, вот подпись для `maps.Clone`.
 
 ```Go
 func Clone[M ~map[K]V, K comparable, V any](m M) M
 ```
 
-Just as with `slices.Clone`, we use a type parameter for the type of the parameter `m`, and then deconstruct the type using two other type parameters `K` and `V`.
+Как и в случае с `slices.Clone`, мы используем параметр типа для типа параметра `m`, а затем деконструируем тип, используя два других параметра типа `K` и `V`.
 
-In `maps.Clone` we constrain `K` to be comparable, as is required for a map key type.
-We can constrain the component types any way we like.
+В `maps.Clone` мы ограничиваем `K` сопоставимостью, как это требуется для типа ключа карты.
+Мы можем ограничить типы компонентов любым удобным для нас способом.
 
 ```Go
 func WithStrings[S ~[]E, E interface { String() string }](s S) (S, []string)
 ```
 
-This says that the argument of `WithStrings` must be a slice type for which the element type has a `String` method.
+Это говорит о том, что аргумент `WithStrings` должен быть типом среза, для которого тип элемента имеет метод `String`.
 
-Since all Go types can be built up from component types, we can always use type parameters to deconstruct those types and constrain them as we like.
-
+Поскольку все типы Go могут быть созданы из типов компонентов, мы всегда можем использовать параметры типа, чтобы деконструировать эти типы и ограничить их по своему усмотрению.
 
 
 
