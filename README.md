@@ -16,10 +16,9 @@ date: 2021-06-03
 by:
 - Katie Hockman
 - Jay Conrod
-tags:
-- fuzz
-- testing
+
 summary: Native Go fuzzing is now ready for beta testing on tip.
+Резюме: Фаззинг Go теперь готово к бета-тестированию.
 ---
 
 
