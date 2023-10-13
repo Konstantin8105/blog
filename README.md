@@ -681,107 +681,111 @@ c.String неопределена (тип []string не имеет поля ил
 func InstantiatedClone1(s []string) []string
 ```
 
-The [Go assignment rules](https://go.dev/ref/spec#Assignability) allow us to pass a value of type `MySlice` to a parameter of type `[]string`, so calling `Clone1` is fine.
-But `Clone1` will return a value of type `[]string`, not a value of type `MySlice`.
-The type `[]string` doesn't have a `String` method, so the compiler reports an error.
-
 [Правила Go](https://go.dev/ref/spec#Assignability) позволяют нам передавать значение типа `MySlice` в параметр типа `[]string`, поэтому вызов `Clone1` вполне допустим.
 Но `Clone1` вернет значение типа `[]string`, а не значение типа `MySlice`.
 Тип `[]string` не имеет метода `String`, поэтому компилятор сообщает об ошибке.
 
-## Flexible Clone
+## Гибкий клон (Flexible Clone)
 
-To fix this problem, we have to write a version of `Clone` that returns the same type as its argument.
-If we can do that, then when we call `Clone` with a value of type `MySlice`, it will return a result of type `MySlice`.
+Чтобы решить эту проблему, нам нужно написать версию `Clone`, которая возвращает тот же тип, что и его аргумент.
+Если мы сможем это сделать, то когда мы вызовем `Clone` со значением типа `MySlice`, он вернет результат типа `MySlice`.
 
-We know that it has to look something like this.
+Мы знаем, что это должно выглядеть примерно так.
 
 ```Go
-func Clone2[S ?](s S) S // INVALID
+func Clone2[S ?](s S) S // INVALID 
+                        // НЕДОПУСТИМО
 ```
 
-This `Clone2` function returns a value that is the same type as its argument.
+Эта функция `Clone2` возвращает значение того же типа, что и ее аргумент.
 
-Here I've written the constraint as `?`, but that's just a placeholder.
-To make this work we need to write a constraint that will let us write the body of the function.
-For `Clone1` we could just use a constraint of `any` for the element type.
-For `Clone2` that won't work: we want to require that `s` be a slice type.
+Здесь я записал ограничение как `?`, но это всего лишь заполнитель.
+Чтобы это работало, нам нужно написать ограничение, которое позволит нам записать тело функции.
+Для `Clone1` мы могли бы просто использовать ограничение `any` для типа элемента.
+Для `Clone2` это не сработает: мы хотим, чтобы `s` был типом среза.
 
-Since we know we want a slice, the constraint of `S` has to be a slice.
-We don't care what the slice element type is, so let's just call it `E`, as we did with `Clone1`.
+Поскольку мы знаем, что нам нужен срез, ограничение `S` должно быть срезом.
+Нас не волнует тип элемента среза, поэтому давайте просто назовем его «E», как мы это сделали с `Clone1`.
 
 ```Go
 func Clone3[S []E](s S) S // INVALID
+                          // НЕДОПУСТИМО
 ```
 
-This is still invalid, because we haven't declared `E`.
-The type argument for `E` can be any type, which means it also has to be a type parameter itself.
-Since it can be any type, its constraint is `any`.
+Это по-прежнему недействительно, поскольку мы не объявили `E`.
+Аргумент типа для `E` может быть любого типа, что означает, что он сам должен быть параметром типа.
+Поскольку он может быть любого типа, его ограничением является `any`.
 
 ```Go
 func Clone4[S []E, E any](s S) S
 ```
 
-This is getting close, and at least it will compile, but we're not quite there yet.
-If we compile this version, we get an error when we call `Clone4(ms)`.
+Это приближается, и, по крайней мере, оно скомпилируется, но мы еще не совсем там.
+Если мы скомпилируем эту версию, мы получим ошибку при вызове `Clone4(ms)`.
 
 ```
 MySlice does not satisfy []string (possibly missing ~ for []string in []string)
+MySlice не соответствует []string (возможно, отсутствует ~ для []string в []string)
 ```
 
-The compiler is telling us that we can't use the type argument `MySlice` for the type parameter `S`, because `MySlice` does not satisfy the constraint `[]E`.
-That's because `[]E` as a constraint only permits a slice type literal, like `[]string`.
-It doesn't permit a named type like `MySlice`.
+Компилятор сообщает нам, что мы не можем использовать аргумент типа `MySlice` для параметра типа `S`, поскольку `MySlice` не удовлетворяет ограничению `[]E`.
+Это потому, что `[]E` в качестве ограничения допускает только литерал типа среза, например `[]string`.
+Он не допускает именованный тип, такой как `MySlice`.
 
-## Underlying type constraints
+## Базовые ограничения типа(Underlying type constraints)
 
-As the error message hints, the answer is to add a `~`.
+Как подсказывает сообщение об ошибке, ответом будет добавление `~`.
 
 ```Go
 func Clone5[S ~[]E, E any](s S) S
 ```
 
-To repeat, writing type parameters and constraints `[S []E, E any]` means that the type argument for `S` can be any unnamed slice type, but it can't be a named type defined as a slice literal.
-Writing `[S ~[]E, E any]`, with a `~`, means that the type argument for `S` can be any type whose underlying type is a slice type.
+Повторим, запись параметров и ограничений типа `[S []E, E Any]` означает, что аргумент типа для `S` может быть любым безымянным типом среза, но не может быть именованным типом, определенным как литерал среза.
+Написание `[S ~[]E, E Any]` с `~` означает, что аргумент типа для `S` может быть любым типом, базовым типом которого является тип среза.
 
-For any named type `type T1 T2` the underlying type of `T1` is the underlying type of `T2`.
-The underlying type of a predeclared type like `int` or a type literal like `[]string` is just the type itself.
-For the exact details, [see the language spec](https://go.dev/ref/spec#Underlying_types).
-In our example, the underlying type of `MySlice` is `[]string`.
+Для любого именованного типа `type T1 T2` базовым типом `T1` является базовый тип `T2`.
+Базовый тип предварительно объявленного типа, такого как `int`, или литерала типа, такого как `[]string`, — это просто сам тип.
+Точные сведения см. в [см. спецификацию языка](https://go.dev/ref/spec#Underlying_types).
+В нашем примере базовым типом `MySlice` является `[]string`.
 
-Since the underlying type of `MySlice` is a slice, we can pass an argument of type `MySlice` to `Clone5`.
-As you may have noticed, the signature of `Clone5` is the same as the signature of `slices.Clone`.
-We've finally gotten to where we want to be.
+Поскольку базовым типом `MySlice` является срез, мы можем передать аргумент типа `MySlice` в `Clone5`.
+Как вы могли заметить, подпись `Clone5` такая же, как подпись `slices.Clone`.
+Мы наконец-то добрались туда, где хотим быть.
 
-Before we move on, let's discuss why the Go syntax requires a `~`.
-It might seem that we would always want to permit passing `MySlice`, so why not make that the default?
-Or, if we need to support exact matching, why not flip things around, so that a constraint of `[]E` permits a named type while a constraint of, say, `=[]E`, only permits slice type literals?
+Прежде чем двигаться дальше, давайте обсудим, почему синтаксис Go требует `~`.
+Может показаться, что мы всегда хотим разрешить передачу `MySlice`, так почему бы не сделать это значением по умолчанию?
+Или, если нам нужно поддерживать точное соответствие, почему бы не перевернуть ситуацию так, чтобы ограничение `[]E` разрешало именованный тип, а ограничение, скажем, `=[]E`, допускало только литералы типа среза?
 
-To explain this, let's first observe that a type parameter list like `[T ~MySlice]` doesn't make sense.
-That's because `MySlice` is not the underlying type of any other type.
-For instance, if we have a definition like `type MySlice2 MySlice`, the underlying type of `MySlice2` is `[]string`, not `MySlice`.
-So either `[T ~MySlice]` would permit no types at all, or it would be the same as `[T MySlice]` and only match `MySlice`.
-Either way, `[T ~MySlice]` isn't useful.
-To avoid this confusion, the language prohibits `[T ~MySlice]`, and the compiler produces an error like
+Чтобы объяснить это, давайте сначала заметим, что список параметров типа, такой как `[T ~MySlice]`, не имеет смысла.
+
+Это потому, что `MySlice` не является базовым типом какого-либо другого типа.
+Например, если у нас есть такое определение, как `type MySlice2 MySlice`, базовым типом `MySlice2` будет `[]string`, а не `MySlice`.
+Таким образом, либо `[T ~MySlice]` вообще не допускает никаких типов, либо он будет таким же, как `[T MySlice]` и будет соответствовать только `MySlice`.
+В любом случае `[T ~MySlice]` бесполезен.
+Чтобы избежать этой путаницы, язык запрещает `[T ~MySlice]`, и компилятор выдает ошибку типа
+
 
 ```
 invalid use of ~ (underlying type of MySlice is []string)
+недопустимое использование ~ (основной тип MySlice — []string)
 ```
 
-If Go didn't require the tilde, so that `[S []E]` would match any type whose underlying type is `[]E`, then we would have to define the meaning of `[S MySlice]`.
+Если бы Go не требовал тильду, чтобы `[S []E]` соответствовал любому типу, базовым типом которого является `[]E`, тогда нам пришлось бы определить значение `[S MySlice]`.
 
-We could prohibit `[S MySlice]`, or we could say that `[S MySlice]` only matches `MySlice`, but either approach runs into trouble with predeclared types.
-A predeclared type, like `int` is its own underlying type.  We want to permit people to be able to write constraints that accept any type argument whose underlying type is `int`.
-In the language today, they can do that by writing `[T ~int]`.
-If we don't require the tilde we would still need a way to say "any type whose underlying type is `int`".
-The natural way to say that would be `[T int]`.
-That would mean that `[T MySlice]` and `[T int]` would behave differently, although they look very similar.
+Мы могли бы запретить `[S MySlice]` или сказать, что `[S MySlice]` соответствует только `MySlice`, но любой подход сталкивается с проблемами с предварительно объявленными типами.
+Предварительно объявленный тип, например `int`, является собственным базовым типом. Мы хотим дать людям возможность писать ограничения, которые принимают любой аргумент типа, базовым типом которого является `int`.
+В современном языке это можно сделать, написав `[T ~int]`.
+Если бы нам не требовалась тильда, нам все равно нужен был бы способ сказать «любой тип, базовым типом которого является `int`».
+Естественным способом сказать это было бы `[T int]`.
+Это означало бы, что `[T MySlice]` и `[T int]` будут вести себя по-разному, хотя они выглядят очень похоже.
 
-We could perhaps say that `[S MySlice]` matches any type whose underlying type is the underlying type of `MySlice`, but that makes `[S MySlice]` unnecessary and confusing.
+Возможно, мы могли бы сказать, что `[S MySlice]` соответствует любому типу, базовым типом которого является базовый тип `MySlice`, но это делает `[S MySlice]` ненужным и запутанным.
 
-We think it's better to require the `~` and be very clear about when we are matching the underlying type rather than the type itself.
+Мы считаем, что лучше требовать `~` и четко понимать, когда мы сопоставляем базовый тип, а не сам тип.
 
-## Type inference
+
+
+## Вывод типа (Type inference)
 
 Now that we've explained the signature of `slices.Clone`, let's see how actually using `slices.Clone` is simplified by type inference.
 Remember, the signature of `Clone` is
