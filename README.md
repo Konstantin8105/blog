@@ -222,19 +222,19 @@ date: 2022-06-01T00:00:00Z
 	package path
 ```
 
-The square brackets in `[path/filepath]` create a [documentation link](#links).
+Квадратные скобки в `[path/filepath]` создают [ссылку на документацию](#links).
 
-As can be seen in this example, Go doc comments use complete sentences.
-For a package comment, that means the [first sentence](/pkg/go/doc/#Package.Synopsis) begins with “Package <name>”.
+Как видно из этого примера, комментарии Go doc используют полные предложения.
+Для комментария к пакету это означает, что [первое предложение](/pkg/go/doc/#Package.Synopsis) начинается с “Package <имя>”.
 
-For multi-file packages, the package comment should only be in one source file.
-If multiple files have package comments, they are concatenated to form one large comment for the entire package.
+Для пакетов из нескольких файлов комментарий пакета должен находиться только в одном исходном файле.
+Если комментарии к пакету есть в нескольких файлах, они объединяются в один большой комментарий для всего пакета.
 
-## Commands
+## Команды (Commands)
 
-A package comment for a command is similar, but it describes the behavior of the program rather than the Go symbols in the package.
-The first sentence conventionally begins with the name of the program itself, capitalized because it is at the start of a sentence.
-For example, here is an abridged version of the package comment for [gofmt](/cmd/gofmt):
+Комментарий пакета для команды аналогичен, но он описывает поведение программы, а не символы Go в пакете.
+Первое предложение традиционно начинается с названия самой программы, написанного с заглавной буквы, поскольку оно находится в начале предложения.
+Например, вот сокращенная версия комментария пакета для [gofmt](/cmd/gofmt):
 
 ```Go
 	/*
@@ -273,11 +273,13 @@ For example, here is an abridged version of the package comment for [gofmt](/cmd
 	package main
 ```
 
-The beginning of the comment is written using [semantic linefeeds](https://rhodesmill.org/brandon/2012/one-sentence-per-line/), in which each new sentence or long phrase is on a line by itself, which can make diffs easier to read as code and comments evolve.
-The later paragraphs happen not to follow this convention and have been wrapped by hand.
-Whatever is best for your code base is fine.
-Either way, `go` `doc` and `pkgsite` rewrap doc comment text when printing it.
-For example:
+Начало комментария записывается с помощью [семантического перевода строки](https://rhodesmill.org/brandon/2012/one-sentence-per-line/), при котором каждое новое предложение или длинная фраза находится на отдельной строке, что может облегчить чтение различий по мере развития кода и комментариев.
+
+Последующие абзацы не соответствуют этому соглашению и были перенесены вручную.
+
+Все, что лучше для вашей кодовой базы, подойдет.
+В любом случае `go` `doc` и `pkgsite` переносят текст комментария к документу при его печати.
+Например:
 
 ```
 	$ go doc gofmt
@@ -302,15 +304,15 @@ For example:
 	...
 ```
 
-The indented lines are treated as preformatted text:
-they are not rewrapped and are printed in code font in HTML and Markdown presentations.
-(The [Syntax](#syntax) section below gives the details.)
+Строки с отступом рассматриваются как предварительно отформатированный текст:
+они не переворачиваются и печатаются кодовым шрифтом в презентациях HTML и Markdown.
+(Подробности приведены в разделе [Синтаксис](#syntax) ниже.)
 
-## Types
+## Типы (Types)
 
-A type's doc comment should explain what each instance of that type represents or provides.
-If the API is simple, the doc comment can be quite short.
-For example:
+Комментарий к документации типа должен объяснять, что представляет или предоставляет каждый экземпляр этого типа.
+Если API простой, комментарий к документу может быть довольно коротким.
+Например:
 
 ```Go
 	package zip
@@ -321,9 +323,9 @@ For example:
 	}
 ```
 
-By default, programmers should expect that a type is safe for use only by a single goroutine at a time.
-If a type provides stronger guarantees, the doc comment should state them.
-For example:
+По умолчанию программисты должны ожидать, что тип безопасен для использования только одной горутиной одновременно.
+Если тип предоставляет более строгие гарантии, они должны быть указаны в комментарии к документу.
+Например:
 
 ```Go
 	package regexp
@@ -336,8 +338,8 @@ For example:
 	}
 ```
 
-Go types should also aim to make the zero value have a useful meaning.
-If it isn't obvious, that meaning should be documented. For example:
+Типы Go также должны стремиться к тому, чтобы нулевое значение имело полезное значение.
+Если это не очевидно, это значение должно быть задокументировано. Например:
 
 ```Go
 	package bytes
@@ -349,8 +351,8 @@ If it isn't obvious, that meaning should be documented. For example:
 	}
 ```
 
-For a struct with exported fields, either the doc comment or per-field comments should explain the meaning of each exported field.
-For example, this type's doc comment explains the fields:
+Для структуры с экспортированными полями либо комментарий к документу, либо комментарии к каждому полю должны объяснять значение каждого экспортированного поля.
+Например, комментарий к документу этого типа объясняет поля:
 
 ```Go
 	package io
@@ -365,7 +367,7 @@ For example, this type's doc comment explains the fields:
 	}
 ```
 
-In contrast, this type's doc comment leaves the explanations to per-field comments:
+Напротив, комментарий документа этого типа оставляет пояснения к комментариям для каждого поля:
 
 ```Go
 	package comment
@@ -384,9 +386,9 @@ In contrast, this type's doc comment leaves the explanations to per-field commen
 	}
 ```
 
-As with packages (above) and funcs (below), doc comments for types start with complete sentences naming the declared symbol.
-An explicit subject often makes the wording clearer, and it makes the text easier to search, whether on a web page or a command line.
-For example:
+Как и в случае с пакетами (выше) и функциями (ниже), комментарии к документам для типов начинаются с полных предложений, называющих объявленный символ.
+Явная тема часто делает формулировку более понятной и упрощает поиск текста как на веб-странице, так и в командной строке.
+Например:
 
 ```
 	$ go doc -all regexp | grep pairs
@@ -397,12 +399,13 @@ For example:
 	$
 ```
 
-## Funcs
+## Функции (Funcs)
 
-A function's doc comment should explain what the function returns or, for functions called for side effects, what it does.
-Named parameters and results can be referred to directly in the comment, without any special syntax like backquotes.
-(A consequence of this convention is that names like `a`, which might be mistaken for ordinary words, are typically avoided.)
-For example:
+Комментарий к документации функции должен объяснять, что возвращает функция или, для функций, вызываемых для побочных эффектов, что она делает.
+На именованные параметры и результаты можно ссылаться непосредственно в комментарии, без какого-либо специального синтаксиса, например обратных кавычек.
+(Следствием этого соглашения является то, что обычно избегаются такие имена, как `a`, которые можно принять за обычные слова.)
+Например:
+
 
 ```Go
 	package strconv
@@ -415,7 +418,7 @@ For example:
 	}
 ```
 
-And:
+И:
 
 ```Go
 	package os
@@ -430,9 +433,9 @@ And:
 	}
 ```
 
-Doc comments typically use the phrase “reports whether” to describe functions that return a boolean.
-The phrase “or not” is unnecessary.
-For example:
+В комментариях к документации обычно используется фраза "сообщает ли"(“reports whether”) для описания функций, возвращающих логическое значение.
+Фраза "или нет"(“or not”) излишняя.
+Например:
 
 ```Go
 	package strings
@@ -441,8 +444,8 @@ For example:
 	func HasPrefix(s, prefix string) bool
 ```
 
-If a doc comment needs to explain multiple results, naming the results can make the doc comment more understandable, even if the names are not used in the body of the function.
-For example:
+Если комментарий к документу должен объяснить несколько результатов, присвоение имен результатам может сделать комментарий к документу более понятным, даже если имена не используются в теле функции.
+Например:
 
 ```Go
 	package io
@@ -459,10 +462,10 @@ For example:
 	}
 ```
 
-Conversely, when the results don't need to be named in the doc comment, they are usually omitted in the code as well, like in the `Quote` example above, to avoid cluttering the presentation.
+И наоборот, когда результаты не нужно называть в комментарии к документу, они обычно также опускаются в коде, как в приведенном выше примере `Цитата`(`Quote`), чтобы не загромождать презентацию.
 
-These rules all apply both to plain functions and to methods.
-For methods, using the same receiver name avoids needless variation when listing all the methods of a type:
+Все эти правила применимы как к простым функциям, так и к методам.
+Для методов использование одного и того же имени получателя позволяет избежать ненужных изменений при перечислении всех методов одного типа:
 
 ```
 	$ go doc bytes.Buffer
