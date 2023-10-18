@@ -615,8 +615,8 @@ date: 2022-06-01T00:00:00Z
 
 ## Переменные (Vars)
 
-The conventions for variables are the same as those for constants.
-For example, here is a set of grouped variables:
+Соглашения для переменных такие же, как и для констант.
+Например, вот набор сгруппированных переменных:
 
 ```Go
 	package fs
@@ -633,7 +633,7 @@ For example, here is a set of grouped variables:
 	)
 ```
 
-And a single variable:
+И одна переменная:
 
 ```Go
 	package unicode
@@ -649,18 +649,18 @@ And a single variable:
 	}
 ```
 
-## Syntax
+## Синтаксис (Syntax)
 
-Go doc comments are written in a simple syntax that supports paragraphs, headings, links, lists, and preformatted code blocks.
-To keep comments lightweight and readable in source files, there is no support for complex features like font changes or raw HTML.
-Markdown aficionados can view the syntax as a simplified subset of Markdown.
+Комментарии Go doc написаны с использованием простого синтаксиса, который поддерживает абзацы, заголовки, ссылки, списки и предварительно отформатированные блоки кода.
+Чтобы комментарии были легкими и читаемыми в исходных файлах, не поддерживаются сложные функции, такие как изменение шрифта или необработанный HTML.
+Поклонники Markdown могут рассматривать синтаксис как упрощенное подмножество Markdown.
 
-The standard formatter [gofmt](/cmd/gofmt) reformats doc comments to use a canonical formatting for each of these features.
-Gofmt aims for readability and user control over how comments are written in source code but will adjust presentation to make the semantic meaning of a particular comment clearer, analogous to reformatting `1+2 * 3` to `1 + 2*3` in ordinary source code.
+Стандартный форматировщик [gofmt](/cmd/gofmt) переформатирует комментарии документа, чтобы использовать каноническое форматирование для каждой из этих функций.
+Gofmt стремится обеспечить читабельность и контроль пользователя над тем, как комментарии пишутся в исходном коде, но будет корректировать представление, чтобы сделать семантическое значение конкретного комментария более ясным, аналогично переформатированию `1+2 * 3` в `1 + 2*3` в обычном формате. исходный код.
 
-Directive comments such as `//go:generate` are not considered part of a doc comment and are omitted from rendered documentation.
-Gofmt moves directive comments to the end of the doc comment, preceded by a blank line.
-For example:
+Комментарии к директивам, такие как `//go:generate`, не считаются частью комментария документа и исключаются из отображаемой документации.
+Gofmt перемещает комментарии директив в конец комментария документа, которому предшествует пустая строка.
+Например:
 
 ```Go
 	package regexp
@@ -671,30 +671,31 @@ For example:
 	type Op uint8
 ```
 
-A directive comment is a line matching the regular expression `//(line |extern |export |[a-z0-9]+:[a-z0-9])`.
-Tools that define their own directives should use the form `//toolname:directive`.
+Комментарий к директиве — это строка, соответствующая регулярному выражению `//(line |extern |export |[a-z0-9]+:[a-z0-9])`.
+Инструменты, которые определяют свои собственные директивы, должны использовать форму `//имя_инструмента:директива`.
 
-Gofmt removes leading and trailing blank lines in doc comments.
-If all lines in a doc comment begin with the same sequence of spaces and tabs, gofmt removes that prefix.
+Gofmt удаляет начальные и конечные пустые строки в комментариях к документам.
+Если все строки в комментарии к документу начинаются с одинаковой последовательности пробелов и табуляции, gofmt удаляет этот префикс.
 
-### Paragraphs
+### Параграфы, абзацы (Paragraphs)
 
-A paragraph is a span of unindented non-blank lines.
-We've already seen many examples of paragraphs.
+Абзац представляет собой набор непустых строк без отступов.
+Мы уже видели много примеров абзацев.
 
-A pair of consecutive backticks (\` U+0060) is interpreted as a Unicode left quote (“ U+201C), and a pair of consecutive single quotes (\' U+0027) is interpreted as a Unicode right quote (” U+201D).
+Пара последовательных обратных кавычек (``` U+0060) интерпретируется как левая кавычка Юникода (`"` U+201C), а пара последовательных одинарных кавычек (`'` U+0027) интерпретируется как правая кавычка Юникода (`"` U +201D).
 
-Gofmt preserves line breaks in paragraph text: it does not rewrap the text.
-This allows the use of [semantic linefeeds](https://rhodesmill.org/brandon/2012/one-sentence-per-line/), as seen earlier.
-Gofmt replaces duplicated blank lines between paragraphs with a single blank line.
-Gofmt also reformats consecutive backticks or single quotes to their Unicode interpretations.
+Gofmt сохраняет разрывы строк в тексте абзаца: он не переносит текст.
+Это позволяет использовать [семантические переводы строк](https://rhodesmill.org/brandon/2012/one-sentence-per-line/), как показано ранее.
+Gofmt заменяет дублированные пустые строки между абзацами одной пустой строкой.
+Gofmt также переформатирует последовательные обратные кавычки или одинарные кавычки в их интерпретации Unicode.
 
-### Headings
 
-A heading is a line beginning with a number sign (U+0023) and then a space and the heading text.
-To be recognized as a heading, the line must be unindented and set off from adjacent paragraph text by blank lines.
+### Заголовок (Headings)
 
-For example:
+Заголовок — это строка, начинающаяся с цифрового знака (U+0023), затем пробела и текста заголовка.
+Чтобы строка была распознана как заголовок, она должна быть без отступа и отделена от текста соседнего абзаца пустыми строками.
+
+Например:
 
 ``` Go
 	// Package strconv implements conversions to and from string representations
@@ -707,7 +708,7 @@ For example:
 	package strconv
 ```
 
-On the other hand:
+С другой стороны:
 
 ```Go
 	// #This is not a heading, because there is no space.
