@@ -489,13 +489,14 @@ date: 2022-06-01T00:00:00Z
 	...
 ```
 
-This example also shows that top-level functions returning a type `T` or pointer `*T`, perhaps with an additional error result, are shown alongside the type `T` and its methods, under the assumption that they are `T`'s constructors.
+Этот пример также показывает, что функции верхнего уровня, возвращающие тип `T` или указатель `*T`, возможно, с дополнительным результатом ошибки, показаны рядом с типом `T` и его методами в предположении, что это тип `T` конструктора.
 
-By default, programmers can assume that a top-level function is safe to call from multiple goroutines; this fact need not be stated explicitly.
+По умолчанию программисты могут предполагать, что функцию верхнего уровня можно безопасно вызывать из нескольких горутин; этот факт не нуждается в прямом указании.
 
-On the other hand, as noted in the previous section, using an instance of a type in any way, including calling a method, is typically assumed to be restricted to a single goroutine at a time.
-If the methods that are safe for concurrent use are not documented in the type's doc comment, they should be documented in per-method comments.
-For example:
+С другой стороны, как отмечалось в предыдущем разделе, использование экземпляра типа любым способом, включая вызов метода, обычно считается ограниченным одновременно одной горутиной.
+Если методы, безопасные для одновременного использования, не описаны в комментариях к документации типа, их следует задокументировать в комментариях для каждого метода.
+Например:
+
 
 ```Go
 	package sql
@@ -510,9 +511,9 @@ For example:
 	}
 ```
 
-Note that function and method doc comments focus on what the operation returns or does, detailing what the caller needs to know.
-Special cases can be particularly important to document.
-For example:
+Обратите внимание, что комментарии к документации по функциям и методам сосредоточены на том, что возвращает или делает операция, и подробно описывают, что необходимо знать вызывающему объекту.
+Особые случаи могут быть особенно важны для документирования.
+Например:
 
 ```Go
 	package math
@@ -530,10 +531,11 @@ For example:
 	}
 ```
 
-Doc comments should not explain internal details such as the algorithm used in the current implementation.
-Those are best left to comments inside the function body.
-It may be appropriate to give asymptotic time or space bounds when that detail is particularly important to callers.
-For example:
+Комментарии к документации не должны объяснять внутренние детали, такие как алгоритм, используемый в текущей реализации.
+Их лучше оставить для комментариев внутри тела функции.
+Может оказаться целесообразным указать асимптотические временные или пространственные границы, когда эта деталь особенно важна для вызывающей стороны.
+Например:
+
 
 ```Go
 	package sort
@@ -546,12 +548,13 @@ For example:
 	}
 ```
 
-Because this doc comment makes no mention of which sorting algorithm is used, it is easier to change the implementation to use a different algorithm in the future.
+Поскольку в этом комментарии к документу не упоминается, какой алгоритм сортировки используется, в будущем легче изменить реализацию, чтобы использовать другой алгоритм.
 
-## Consts
+## Постоянные (Consts)
 
-Go's declaration syntax allows grouping of declarations, in which case a single doc comment can introduce a group of related constants, with individual constants only documented by short end-of-line comments.
-For example:
+Синтаксис объявлений Go позволяет группировать объявления, и в этом случае один комментарий к документу может представлять группу связанных констант, при этом отдельные константы документируются только короткими комментариями в конце строки.
+Например:
+
 
 ```Go
 	package scanner // import "text/scanner"
@@ -567,7 +570,7 @@ For example:
 	)
 ```
 
-Sometimes the group needs no doc comment at all. For example:
+Иногда группа вообще не нуждается в комментариях к документу. Например:
 
 ```Go
 	package unicode // import "unicode"
@@ -580,7 +583,7 @@ Sometimes the group needs no doc comment at all. For example:
 	)
 ```
 
-On the other hand, ungrouped constants typically warrant a full doc comment starting with a complete sentence. For example:
+С другой стороны, разгруппированные константы обычно требуют полного комментария к документу, начиная с полного предложения. Например:
 
 ```Go
 	package unicode
@@ -589,8 +592,8 @@ On the other hand, ungrouped constants typically warrant a full doc comment star
 	const Version = "13.0.0"
 ```
 
-Typed constants are displayed next to the declaration of their type and as a result often omit a const group doc comment in favor of the type's doc comment.
-For example:
+Типизированные константы отображаются рядом с объявлением их типа, и в результате комментарий к документу группы const часто опускается в пользу комментария к документу типа.
+Например:
 
 ```Go
 	package syntax
@@ -608,9 +611,9 @@ For example:
 	)
 ```
 
-(See [pkg.go.dev/regexp/syntax#Op](https://pkg.go.dev/regexp/syntax#Op) for the HTML presentation.)
+(Смотри [pkg.go.dev/regexp/syntax#Op](https://pkg.go.dev/regexp/syntax#Op) для презентации HTML.)
 
-## Vars
+## Переменные (Vars)
 
 The conventions for variables are the same as those for constants.
 For example, here is a set of grouped variables:
