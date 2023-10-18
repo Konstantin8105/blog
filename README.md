@@ -938,15 +938,15 @@ Gofmt сохраняет, но не требует пустой строки м�
 	}
 ```
 
-Gofmt indents all lines in a code block by a single tab, replacing any other indentation the non-blank lines have in common.
-Gofmt also inserts a blank line before and after each code block, distinguishing the code block clearly from the surrounding paragraph text.
+Gofmt делает отступы для всех строк в блоке кода на одну табуляцию, заменяя любые другие отступы, общие для непустых строк.
+Gofmt также вставляет пустую строку до и после каждого блока кода, четко отличая блок кода от окружающего его текста абзаца.
 
-## Common mistakes and pitfalls
+## Распространенные ошибки и подводные камни (Common mistakes and pitfalls)
 
-The rule that any span of indented or blank lines in a doc comment is rendered as a code block dates to the earliest days of Go.
-Unfortunately, the lack of support for doc comments in gofmt has led to many existing comments that use indentation without meaning to create a code block.
+Правило, согласно которому любой диапазон строк с отступом или пустых строк в комментарии к документу отображается как блок кода, восходит к самым ранним дням Go.
+К сожалению, отсутствие поддержки комментариев к документам в gofmt привело к тому, что многие существующие комментарии используют отступы без необходимости создания блока кода.
 
-For example, this unindented list has always been interpreted by godoc as a three-line paragraph followed by a one-line code block:
+Например, этот список без отступов всегда интерпретировался godoc как трехстрочный абзац, за которым следовал однострочный блок кода:
 
 ```Go
 	package http
@@ -960,7 +960,7 @@ For example, this unindented list has always been interpreted by godoc as a thre
 	}
 ```
 
-This always rendered in `go` `doc` as:
+Это всегда отображается в `go` `doc` как:
 
 ```
 	cancelTimerBody is an io.ReadCloser that wraps rc with two features:
@@ -970,8 +970,7 @@ This always rendered in `go` `doc` as:
 	    marked as net.Error that hit its timeout.
 ``
 
-Similarly, the command in this comment is a one-line paragraph
-followed by a one-line code block:
+Аналогично, команда в этом комментарии представляет собой однострочный абзац, за которым следует однострочный блок кода:
 
 ```Go
 	package smtp
@@ -983,7 +982,7 @@ followed by a one-line code block:
 	var localhostCert = []byte(`...`)
 ```
 
-This rendered in `go` `doc` as:
+Это всегда отображается в `go` `doc` как:
 
 ```
 	localhostCert is a PEM-encoded TLS cert generated from src/crypto/tls:
@@ -993,7 +992,7 @@ This rendered in `go` `doc` as:
 	    --ca --start-date "Jan 1 00:00:00 1970" --duration=1000000h
 ```
 
-And this comment is a two-line paragraph (the second line is “{”), followed by a six-line indented code block and a one-line paragraph (“}”).
+Этот комментарий представляет собой двухстрочный абзац (вторая строка — `{`), за которым следует шестистрочный блок кода с отступом и однострочный абзац (`}`).
 
 ```Go
 	// On the wire, the JSON will look something like this:
@@ -1007,7 +1006,7 @@ And this comment is a two-line paragraph (the second line is “{”), followed 
 	// }
 ```
 
-And this rendered in `go` `doc` as:
+И это отображается в `go` `doc` как:
 
 ```
 	On the wire, the JSON will look something like this: {
@@ -1022,15 +1021,16 @@ And this rendered in `go` `doc` as:
 	}
 ```
 
-Another common mistake was an unindented Go function definition or block statement, similarly bracketed by “{” and “}”.
+Другой распространенной ошибкой было определение функции Go без отступа или оператор блока, заключенный в квадратные скобки `{` и `}`.
 
-The introduction of doc comment reformatting in Go 1.19's gofmt makes mistakes like these more visible by adding blank lines around the code blocks.
+Введение переформатирования комментариев документа в gofmt Go 1.19 делает подобные ошибки более заметными за счет добавления пустых строк вокруг блоков кода.
 
-Analysis in 2022 found that only 3% of doc comments in public Go modules were reformatted at all by the draft Go 1.19 gofmt.
-Limiting ourselves to those comments, about 87% of gofmt's reformattings preserved the structure that a person would infer from reading the comment; about 6% were tripped up by these kinds of unindented lists, unindented multiline shell commands, and unindented brace-delimited code blocks.
+Анализ, проведенный в 2022 году, показал, что только 3% комментариев к документам в общедоступных модулях Go были вообще переформатированы в проекте Go 1.19 gofmt.
 
-Based on this analysis, the Go 1.19 gofmt applies a few heuristics to merge unindented lines into an adjacent indented list or code block.
-With those adjustments, the Go 1.19 gofmt reformats the above examples to:
+Ограничиваясь этими комментариями, около 87% переформатирований сохранили структуру, которую человек мог бы сделать, прочитав комментарий; около 6% были сбиты с толку такими списками без отступов, многострочными командами оболочки без отступов и блоками кода без отступов, разделенными скобками.
+
+На основе этого анализа Go 1.19 применяет несколько эвристик для объединения строк без отступов в соседний список или блок кода с отступом.
+С этими изменениями Go 1.19 переформатирует приведенные выше примеры следующим образом:
 
 ```Go
 	// cancelTimerBody is an io.ReadCloser that wraps rc with two features:
@@ -1055,12 +1055,13 @@ With those adjustments, the Go 1.19 gofmt reformats the above examples to:
 	//	}
 ```
 
-This reformatting makes the meaning clearer as well as making the doc comments render correctly in earlier versions of Go.
-If the heuristic ever makes a bad decision, it can be overridden by inserting a blank line to clearly separate the paragraph text from non-paragraph text.
+Такое переформатирование делает смысл более ясным, а также обеспечивает правильное отображение комментариев к документу в более ранних версиях Go.
+Если эвристика когда-либо примет неправильное решение, ее можно переопределить, вставив пустую строку, чтобы четко отделить текст абзаца от текста, не являющегося абзацем.
 
-Even with these heuristics, other existing comments will need manual adjustment to correct their rendering.
-The most common mistake is indenting a wrapped unindented line of text.
-For example:
+Даже при использовании этой эвристики другие существующие комментарии потребуют ручной настройки для корректного отображения.
+Самая распространенная ошибка — отступ для перевернутой строки текста без отступа.
+Например:
+
 
 ```Go
 	// TODO Revisit this design. It may make sense to walk those nodes
@@ -1071,11 +1072,11 @@ For example:
 	//  the image file. The value should be a power of 2 between 512 and 64 K, inclusive."
 ```
 
-In both of these, the last line is indented, making it a code block.
-The fix is to unindent the lines.
+В обоих случаях последняя строка имеет отступ, что делает ее блоком кода.
+Исправление состоит в том, чтобы убрать отступы в строках.
 
-Another common mistake is not indenting a wrapped indented line of a list or code block.
-For example:
+Другая распространенная ошибка — отсутствие отступа в обернутой строке списка или блока кода.
+Например:
 
 ```Go
 	// Uses of this error model include:
@@ -1091,9 +1092,10 @@ For example:
 	//     have a `Status` message for error reporting.
 ```
 
-The fix is to indent the wrapped lines.
+Исправление состоит в том, чтобы сделать отступ для переносимых строк.
 
-Go doc comments do not support nested lists, so gofmt reformats
+Комментарии Go doc не поддерживают вложенные списки, поэтому gofmt переформатирует
+
 
 ```Go
 	// Here is a list:
@@ -1105,7 +1107,7 @@ Go doc comments do not support nested lists, so gofmt reformats
 	//  - Item 3.
 ```
 
-to
+в
 
 ```Go
 	// Here is a list:
@@ -1117,9 +1119,9 @@ to
 	//  - Item 3.
 ```
 
-Rewriting the text to avoid nested lists usually improves the documentation and is the best solution.
-Another potential workaround is to mix list markers, since bullet markers do not introduce list items in a numbered list, nor vice versa.
-For example:
+Переписывание текста во избежание вложенных списков обычно улучшает документацию и является лучшим решением.
+Другим возможным решением является смешивание маркеров списка, поскольку маркеры маркеров не вводят элементы в нумерованный список и наоборот.
+Например:
 
 ```Go
 	// Here is a list:
