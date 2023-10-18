@@ -729,17 +729,18 @@ Gofmt также переформатирует последовательные
 	//     # This is not a heading, because it is indented.
 ```
 
-The # syntax was added in Go 1.19.
-Before Go 1.19, headings were identified implicitly by single-line paragraphs satisfying certain conditions, most notably the lack of any terminating punctuation.
+Синтаксис `#` был добавлен в Go 1.19.
+До Go 1.19 заголовки идентифицировались неявно с помощью однострочных абзацев, удовлетворяющих определенным условиям, в первую очередь отсутствию завершающих знаков препинания.
 
-Gofmt reformats [lines treated as implicit headings](https://github.com/golang/proposal/blob/master/design/51082-godocfmt.md#headings) by earlier versions of Go to use # headings instead.
-If the reformatting is not appropriate—that is, if the line was not meant to be a heading—the easiest way to make it a paragraph is to introduce terminating punctuation such as a period or colon, or to break it into two lines.
+Gofmt переформатирует [строки, которые рассматриваются как неявные заголовки](https://github.com/golang/proposal/blob/master/design/51082-godocfmt.md#headings) в более ранних версиях Go, чтобы вместо этого использовать `#` заголовки.
+Если переформатирование не подходит (то есть если строка не должна была быть заголовком), самый простой способ сделать ее абзацем — ввести завершающий знак препинания, например точку или двоеточие, или разбить ее на две строки.
 
-### Links
 
-A span of unindented non-blank lines defines link targets when every line is of the form “[Text]: URL”.
-In other text in the same doc comment, “[Text]” represents a link to URL using the given text—in HTML, \<a href="URL">Text\</a>.
-For example:
+### Ссылки (Links)
+
+Диапазон непустых строк без отступов определяет цели ссылки, когда каждая строка имеет форму “[Text]: URL”.
+В другом тексте того же комментария к документу “[Text]” представляет собой ссылку на URL-адрес с использованием заданного текста — в HTML — `\<a href="URL">Text\</a>`.
+Например:
 
 ```Go
 	// Package json implements encoding and decoding of JSON as defined in
@@ -754,22 +755,28 @@ For example:
 	package json
 ```
 
-By keeping URLs in a separate section, this format only minimally interrupts the flow of the actual text.  It also roughly matches the Markdown [shortcut reference link format](https://spec.commonmark.org/0.30/#shortcut-reference-link), without the optional title text.
+Сохраняя URL-адреса в отдельном разделе, этот формат лишь минимально прерывает поток фактического текста. Он также примерно соответствует Markdown [формату ярлыка ссылки](https://spec.commonmark.org/0.30/#shortcut-reference-link) без необязательного текста заголовка.
 
-If there is no corresponding URL declaration, then (except for doc links, described in the next section) “[Text]” is not a hyperlink, and the square brackets are preserved when displayed.
-Each doc comment is considered independently:
-link target definitions in one comment do not affect other comments.
+Если соответствующее объявление URL-адреса отсутствует, то (за исключением ссылок на документы, описанных в следующем разделе) “[Text]” не является гиперссылкой, и квадратные скобки сохраняются при отображении.
+Каждый комментарий к документу рассматривается независимо:
 
-Although link target definition blocks may be interleaved with ordinary paragraphs, gofmt moves all link target definitions to the end of the doc comment, in up to two blocks: first a block containing all the link targets that are referenced in the comment, and then a block containing all the targets _not_ referenced in the comment.
-The separate block makes unused targets easy to notice and fix (in case the links or the definitions have typos) or to delete (in case the definitions are no longer needed).
+определения целей ссылок в одном комментарии не влияют на другие комментарии.
 
-Plain text that is recognized as a URL is automatically linked in HTML renderings.
+Хотя блоки определения целей ссылок могут чередоваться с обычными абзацами, gofmt перемещает все определения целей ссылок в конец комментария документа, максимум в двух блоках: 
 
-### Doc links
+сначала блок, содержащий все цели ссылок, на которые есть ссылки в комментарии, а затем блок, содержащий все цели ссылок, на которые есть ссылки в комментарии. блок, содержащий все цели, _не_ указанные в комментарии.
 
-Doc links are links of the form “[Name1]” or “[Name1.Name2]” to refer to exported identifiers in the current package, or “[pkg]”, “[pkg.Name1]”, or “[pkg.Name1.Name2]” to refer to identifiers in other packages.
+Отдельный блок позволяет легко заметить и исправить неиспользуемые цели (в случае, если в ссылках или определениях есть опечатки) или удалить (в случае, если определения больше не нужны).
 
-For example:
+Обычный текст, распознаваемый как URL-адрес, автоматически связывается при визуализации HTML.
+
+
+### Ссылки на документацию (Doc links)
+
+Ссылки на документы — это ссылки вида “[Name1]” или “[Name1.Name2]”, обозначающие экспортированные идентификаторы в текущем пакете, или «[pkg]», «[pkg.Name1]» или «[pkg.Name1]» или «[pkg.Name1]». Имя1.Имя2]» для ссылки на идентификаторы в других пакетах.
+
+Например:
+
 
 ```Go
 	package bytes
