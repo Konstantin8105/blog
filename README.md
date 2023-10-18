@@ -189,25 +189,27 @@ func FuzzParseQuery(f *testing.F) {
 Go Doc комментарии
 date: 2022-06-01T00:00:00Z
 
-“Doc comments” are comments that appear immediately before top-level package, const, func, type, and var declarations with no intervening newlines.
-Every exported (capitalized) name should have a doc comment.
+«Комментарии к документу» — это комментарии, которые появляются непосредственно перед объявлениями package, const, func, type и var верхнего уровня без промежуточных символов новой строки.
+Каждое экспортированное (с заглавной буквы) имя должно иметь комментарий в документе.
 
-The [go/doc](/pkg/go/doc) and [go/doc/comment](/pkg/go/doc/comment) packages provide the ability to extract documentation from Go source code, and a variety of tools make use of this functionality.
-The [`go` `doc`](/cmd/go#hdr-Show_documentation_for_package_or_symbol) command looks up and prints the doc comment for a given package or symbol.
-(A symbol is a top-level const, func, type, or var.) The web server [pkg.go.dev](https://pkg.go.dev/) shows the documentation for public Go packages (when their licenses permit that use).
-The program serving that site is [golang.org/x/pkgsite/cmd/pkgsite](https://pkg.go.dev/golang.org/x/pkgsite/cmd/pkgsite), which can also be run locally to view documentation for private modules or without an internet connection.
-The language server [gopls](https://pkg.go.dev/golang.org/x/tools/gopls) provides documentation when editing Go source files in IDEs.
+Пакеты [go/doc](/pkg/go/doc) и [go/doc/comment](/pkg/go/doc/comment) предоставляют возможность извлекать документацию из исходного кода Go, а различные инструменты позволяют использование этого функционала.
+Команда [`go` `doc`](/cmd/go#hdr-Show_documentation_for_package_or_symbol) ищет и печатает комментарий документа для данного пакета или символа.
+(Символ — это константа, функция, тип или переменная верхнего уровня.) Веб-сервер [pkg.go.dev](https://pkg.go.dev/) отображает документацию для общедоступных пакетов Go (когда их лицензии разрешают такое использование).
+Программа, обслуживающая этот сайт, — [golang.org/x/pkgsite/cmd/pkgsite](https://pkg.go.dev/golang.org/x/pkgsite/cmd/pkgsite), которую также можно запустить локально для просматривать документацию для частных модулей или без подключения к Интернету.
+Языковой сервер [gopls](https://pkg.go.dev/golang.org/x/tools/gopls) предоставляет документацию при редактировании исходных файлов Go в IDE.
 
-The rest of this page documents how to write Go doc comments.
+Остальная часть этой страницы описывает, как писать комментарии к документам Go.
 
-## Packages {#package}
 
-Every package should have a package comment introducing the package.
-It provides information relevant to the package as a whole and generally sets expectations for the package.
-Especially in large packages, it can be helpful for the package comment to give a brief overview of the most important parts of the API, linking to other doc comments as needed.
+## Пакеты (Packages)
 
-If the package is simple, the package comment can be brief.
-For example:
+Каждый пакет должен иметь комментарий, представляющий пакет.
+
+Он предоставляет информацию, относящуюся к пакету в целом, и в целом определяет ожидания от пакета.
+В комментариях к пакету, особенно в больших пакетах, может быть полезно дать краткий обзор наиболее важных частей API, при необходимости ссылаясь на другие комментарии к документации.
+
+Если пакет простой, комментарий к пакету может быть кратким.
+Например:
 
 ```Go
 	// Package path implements utility routines for manipulating slash-separated
@@ -228,7 +230,7 @@ For a package comment, that means the [first sentence](/pkg/go/doc/#Package.Syno
 For multi-file packages, the package comment should only be in one source file.
 If multiple files have package comments, they are concatenated to form one large comment for the entire package.
 
-## Commands {#cmd}
+## Commands
 
 A package comment for a command is similar, but it describes the behavior of the program rather than the Go symbols in the package.
 The first sentence conventionally begins with the name of the program itself, capitalized because it is at the start of a sentence.
@@ -304,7 +306,7 @@ The indented lines are treated as preformatted text:
 they are not rewrapped and are printed in code font in HTML and Markdown presentations.
 (The [Syntax](#syntax) section below gives the details.)
 
-## Types {#type}
+## Types
 
 A type's doc comment should explain what each instance of that type represents or provides.
 If the API is simple, the doc comment can be quite short.
@@ -395,7 +397,7 @@ For example:
 	$
 ```
 
-## Funcs {#func}
+## Funcs
 
 A function's doc comment should explain what the function returns or, for functions called for side effects, what it does.
 Named parameters and results can be referred to directly in the comment, without any special syntax like backquotes.
@@ -543,7 +545,7 @@ For example:
 
 Because this doc comment makes no mention of which sorting algorithm is used, it is easier to change the implementation to use a different algorithm in the future.
 
-## Consts {#const}
+## Consts
 
 Go's declaration syntax allows grouping of declarations, in which case a single doc comment can introduce a group of related constants, with individual constants only documented by short end-of-line comments.
 For example:
@@ -605,7 +607,7 @@ For example:
 
 (See [pkg.go.dev/regexp/syntax#Op](https://pkg.go.dev/regexp/syntax#Op) for the HTML presentation.)
 
-## Vars {#var}
+## Vars
 
 The conventions for variables are the same as those for constants.
 For example, here is a set of grouped variables:
@@ -641,7 +643,7 @@ And a single variable:
 	}
 ```
 
-## Syntax {#syntax}
+## Syntax
 
 Go doc comments are written in a simple syntax that supports paragraphs, headings, links, lists, and preformatted code blocks.
 To keep comments lightweight and readable in source files, there is no support for complex features like font changes or raw HTML.
@@ -669,7 +671,7 @@ Tools that define their own directives should use the form `//toolname:directive
 Gofmt removes leading and trailing blank lines in doc comments.
 If all lines in a doc comment begin with the same sequence of spaces and tabs, gofmt removes that prefix.
 
-### Paragraphs {#paragraphs}
+### Paragraphs
 
 A paragraph is a span of unindented non-blank lines.
 We've already seen many examples of paragraphs.
@@ -681,7 +683,7 @@ This allows the use of [semantic linefeeds](https://rhodesmill.org/brandon/2012/
 Gofmt replaces duplicated blank lines between paragraphs with a single blank line.
 Gofmt also reformats consecutive backticks or single quotes to their Unicode interpretations.
 
-### Headings {#headings}
+### Headings
 
 A heading is a line beginning with a number sign (U+0023) and then a space and the heading text.
 To be recognized as a heading, the line must be unindented and set off from adjacent paragraph text by blank lines.
@@ -726,7 +728,7 @@ Before Go 1.19, headings were identified implicitly by single-line paragraphs sa
 Gofmt reformats [lines treated as implicit headings](https://github.com/golang/proposal/blob/master/design/51082-godocfmt.md#headings) by earlier versions of Go to use # headings instead.
 If the reformatting is not appropriate—that is, if the line was not meant to be a heading—the easiest way to make it a paragraph is to introduce terminating punctuation such as a period or colon, or to break it into two lines.
 
-### Links {#links}
+### Links
 
 A span of unindented non-blank lines defines link targets when every line is of the form “[Text]: URL”.
 In other text in the same doc comment, “[Text]” represents a link to URL using the given text—in HTML, \<a href="URL">Text\</a>.
@@ -756,7 +758,7 @@ The separate block makes unused targets easy to notice and fix (in case the link
 
 Plain text that is recognized as a URL is automatically linked in HTML renderings.
 
-### Doc links {#doclinks}
+### Doc links
 
 Doc links are links of the form “[Name1]” or “[Name1.Name2]” to refer to exported identifiers in the current package, or “[pkg]”, “[pkg.Name1]”, or “[pkg.Name1.Name2]” to refer to identifiers in other packages.
 
@@ -788,7 +790,7 @@ For example, `[os.File]` and `[example.com/sys.File]` are documentation links (t
 To avoid problems with maps, generics, and array types, doc links must be both preceded and followed by punctuation, spaces, tabs, or the start or end of a line.
 For example, the text “map[ast.Expr]TypeAndValue” does not contain a doc link.
 
-### Lists {#lists}
+### Lists
 
 A list is a span of indented or blank lines (which would otherwise be a code block, as described in the next section) in which the first indented line begins with a bullet list marker or a numbered list marker.
 
@@ -861,7 +863,7 @@ Gofmt reformats numbered lists to use a single space before the number, a period
 Gofmt preserves but does not require a blank line between a list and the preceding paragraph.
 It inserts a blank line between a list and the following paragraph or heading.
 
-### Code blocks {#code}
+### Code blocks
 
 A code block is a span of indented or blank lines not starting with a bullet list marker or numbered list marker.
 It is rendered as preformatted text (a \<pre> block in HTML).
@@ -924,7 +926,7 @@ Of course, code blocks also often contain preformatted text besides code. For ex
 Gofmt indents all lines in a code block by a single tab, replacing any other indentation the non-blank lines have in common.
 Gofmt also inserts a blank line before and after each code block, distinguishing the code block clearly from the surrounding paragraph text.
 
-## Common mistakes and pitfalls {#mistakes}
+## Common mistakes and pitfalls
 
 The rule that any span of indented or blank lines in a doc comment is rendered as a code block dates to the earliest days of Go.
 Unfortunately, the lack of support for doc comments in gofmt has led to many existing comments that use indentation without meaning to create a code block.
