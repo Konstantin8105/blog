@@ -790,28 +790,28 @@ Gofmt переформатирует [строки, которые рассма�
 	}
 ```
 
-The bracketed text for a symbol link can include an optional leading star, making it easy to refer to pointer types, such as `*bytes.Buffer`.
+Текст в скобках для ссылки на символ может включать необязательную ведущую звездочку, что упрощает обращение к типам указателей, например `*bytes.Buffer`.
 
-When referring to other packages, “pkg” can be either a full import path or the assumed package name of an existing import. The assumed package name is either the identifier in a renamed import or else [the name assumed by goimports](https://pkg.go.dev/golang.org/x/tools/internal/imports#ImportPathToAssumedName).
-(Goimports inserts renamings when that assumption is not correct, so this rule should work for essentially all Go code.)
-For example, if the current package imports encoding/json, then “[json.Decoder]” can be written in place of “[encoding/json.Decoder]”
-to link to the docs for encoding/json's Decoder.
-If different source files in a package import different packages using the same name, then the shorthand is ambiguous and cannot be used.
+При ссылке на другие пакеты «pkg» может быть либо полным путем импорта, либо предполагаемым именем пакета существующего импорта. Предполагаемое имя пакета — это либо идентификатор в переименованном импорте, либо [имя, присвоенное goimports](https://pkg.go.dev/golang.org/x/tools/internal/imports#ImportPathToAssumedName).
+(Goimports вставляет переименования, когда это предположение неверно, поэтому это правило должно работать практически для всего кода Go.)
 
-A “pkg” is only assumed to be a full import path if it starts with a domain name (a path element with a dot) or is one of the packages from the standard library (“[os]”, “[encoding/json]”, and so on).
-For example, `[os.File]` and `[example.com/sys.File]` are documentation links (the latter will be a broken link), but `[os/sys.File]` is not, because there is no os/sys package in the standard library.
+Например, если текущий `package imports encoding/json`, то вместо “[json.Decoder]” можно написать “[encoding/json.Decoder]” для ссылки на документацию `encoding/json's Decoder`. 
+Если разные исходные файлы в пакете импортируют разные пакеты, используя одно и то же имя, то сокращение будет неоднозначным и не может использоваться.
 
-To avoid problems with maps, generics, and array types, doc links must be both preceded and followed by punctuation, spaces, tabs, or the start or end of a line.
-For example, the text “map[ast.Expr]TypeAndValue” does not contain a doc link.
+`pkg` считается полным путем импорта только в том случае, если он начинается с имени домена (элемент пути с точкой) или является одним из пакетов из стандартной библиотеки (“[os]”, “[encoding/json]”, и так далее).
+Например, `[os.File]` и `[example.com/sys.File]` являются ссылками на документацию (последняя будет неработающей ссылкой), а `[os/sys.File]` — нет, поскольку там в стандартной библиотеке нет пакета os/sys.
 
-### Lists
+Чтобы избежать проблем с картами, универсальными шаблонами и типами массивов, ссылкам на документы должны предшествовать и следовать знаки препинания, пробелы, табуляции, а также начало или конец строки.
+Например, текст “map[ast.Expr]TypeAndValue” не содержит ссылки на документ.
 
-A list is a span of indented or blank lines (which would otherwise be a code block, as described in the next section) in which the first indented line begins with a bullet list marker or a numbered list marker.
+### Списки (Lists)
 
-A bullet list marker is a star, plus, dash, or Unicode bullet `(*, +, -, •; U+002A, U+002B, U+002D, U+2022)` followed by a space or tab and then text.
-In a bullet list, each line beginning with a bullet list marker starts a new list item.
+Список — это диапазон строк с отступом или пустых строк (которые в противном случае были бы блоком кода, как описано в следующем разделе), в котором первая строка с отступом начинается с маркера маркированного списка или маркера нумерованного списка.
 
-For example:
+Маркер списка маркеров представляет собой звездочку, плюс, тире или маркер Unicode `(*, +, -, •; U+002A, U+002B, U+002D, U+2022)`, за которым следует пробел или табуляция, а затем текст.
+В маркированном списке каждая строка, начинающаяся с маркера маркированного списка, начинает новый элемент списка.
+
+Например:
 
 ```Go
 	package url
@@ -835,11 +835,11 @@ For example:
 	}
 ```
 
-A numbered list marker is a decimal number of any length followed by a period or right parenthesis, then a space or tab, and then text.
-In a numbered list, each line beginning with a number list marker starts a new list item.
-Item numbers are left as is, never renumbered.
+Маркер нумерованного списка представляет собой десятичное число любой длины, за которым следует точка или правая скобка, затем пробел или табуляция, а затем текст.
+В нумерованном списке каждая строка, начинающаяся с маркера нумерованного списка, начинает новый элемент списка.
+Номера позиций остаются как есть, нумерация никогда не меняется.
 
-For example:
+Например:
 
 ```Go
 	package path
@@ -868,21 +868,22 @@ For example:
 	}
 ```
 
-List items only contain paragraphs, not code blocks or nested lists.  This avoids any space-counting subtlety as well as questions about how many spaces a tab counts for in inconsistent indentation.
+Элементы списка содержат только абзацы, а не блоки кода или вложенные списки. Это позволяет избежать каких-либо тонкостей подсчета пробелов, а также вопросов о том, сколько пробелов учитывается табуляцией при несогласованных отступах.
 
-Gofmt reformats bullet lists to use a dash as the bullet marker, two spaces of indentation before the dash, and four spaces of indentation for continuation lines.
+Gofmt переформатирует списки маркеров, чтобы использовать тире в качестве маркера маркера, два пробела отступа перед тире и четыре пробела отступа для строк продолжения.
 
-Gofmt reformats numbered lists to use a single space before the number, a period after the number, and again four spaces of indentation for continuation lines.
+Gofmt переформатирует нумерованные списки, чтобы использовать один пробел перед номером, точку после номера и снова четыре пробела для строк продолжения.
 
-Gofmt preserves but does not require a blank line between a list and the preceding paragraph.
-It inserts a blank line between a list and the following paragraph or heading.
+Gofmt сохраняет, но не требует пустой строки между списком и предыдущим абзацем.
+Он вставляет пустую строку между списком и следующим абзацем или заголовком.
 
-### Code blocks
 
-A code block is a span of indented or blank lines not starting with a bullet list marker or numbered list marker.
-It is rendered as preformatted text (a \<pre> block in HTML).
+### Блоки кода (Code blocks)
 
-Code blocks often contain Go code. For example:
+Блок кода — это диапазон строк с отступом или пустых строк, не начинающийся с маркера маркированного списка или маркера нумерованного списка.
+Он отображается как предварительно отформатированный текст (блок \<pre> в HTML).
+
+Блоки кода часто содержат код Go. Например:
 
 ```Go
 	package sort
@@ -906,7 +907,7 @@ Code blocks often contain Go code. For example:
 	}
 ```
 
-Of course, code blocks also often contain preformatted text besides code. For example:
+Конечно, помимо кода блоки кода часто содержат предварительно отформатированный текст. Например:
 
 ```Go
 	package path
